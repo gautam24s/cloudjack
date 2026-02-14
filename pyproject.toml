@@ -1,16 +1,89 @@
 [project]
 name = "cloudjack"
 version = "0.1.0"
-description = "Add your description here"
+description = "A unified multi-cloud SDK for AWS and GCP services"
 readme = "README.md"
 requires-python = ">=3.14"
+license = {text = "MIT"}
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Software Development :: Libraries",
+]
 dependencies = [
+    "pydantic>=2.12.5",
+]
+
+[project.optional-dependencies]
+aws = [
     "boto3>=1.42.49",
+]
+gcp = [
+    "google-cloud-compute>=1.43.0",
+    "google-cloud-dns>=0.36.0",
+    "google-cloud-iam>=2.21.0",
+    "google-cloud-logging>=3.13.0",
+    "google-cloud-pubsub>=2.35.0",
+    "google-cloud-resource-manager>=1.16.0",
     "google-cloud-secret-manager>=2.26.0",
     "google-cloud-storage>=3.9.0",
 ]
+all = [
+    "cloudjack[aws,gcp]",
+]
+
+[project.scripts]
+cloudjack = "cloud.cli:main"
 
 [dependency-groups]
 dev = [
+    "boto3>=1.42.49",
+    "google-cloud-compute>=1.43.0",
+    "google-cloud-dns>=0.36.0",
+    "google-cloud-iam>=2.21.0",
+    "google-cloud-logging>=3.13.0",
+    "google-cloud-pubsub>=2.35.0",
+    "google-cloud-resource-manager>=1.16.0",
+    "google-cloud-secret-manager>=2.26.0",
+    "google-cloud-storage>=3.9.0",
+    "boto3-stubs>=1.42.49",
+    "mypy>=1.19.1",
     "pytest>=9.0.2",
+    "pytest-cov>=7.0.0",
+    "mkdocs>=1.6.1",
+    "mkdocs-material>=9.7.1",
+    "mkdocstrings[python]>=1.0.3",
 ]
+
+[tool.uv]
+package = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--tb=short -q"
+
+[tool.mypy]
+python_version = "3.14"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+ignore_missing_imports = true
+
+[tool.coverage.run]
+source = ["cloud"]
+omit = ["tests/*"]
+
+[tool.coverage.report]
+show_missing = true
+skip_empty = true
+fail_under = 80
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["cloud"]

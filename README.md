@@ -139,36 +139,36 @@ Proposals and future work to make Cloudjack a production-ready library.
 
 ### New Service Blueprints
 
-- [ ] **Queue/Messaging** — Unified interface for AWS SQS, GCP Pub/Sub, Azure Service Bus.
-- [ ] **IAM/Auth** — Role and policy management across providers.
-- [ ] **DNS** — Route53, Cloud DNS, Azure DNS under one blueprint.
-- [ ] **Compute** — Basic VM lifecycle (create, start, stop, terminate).
-- [ ] **Logging** — CloudWatch Logs, Cloud Logging, Azure Monitor.
+- [x] **Queue/Messaging** — Unified interface for AWS SQS, GCP Pub/Sub, Azure Service Bus.
+- [x] **IAM/Auth** — Role and policy management across providers.
+- [x] **DNS** — Route53, Cloud DNS, Azure DNS under one blueprint.
+- [x] **Compute** — Basic VM lifecycle (create, start, stop, terminate).
+- [x] **Logging** — CloudWatch Logs, Cloud Logging, Azure Monitor.
 
 ### Core Improvements
 
-- [ ] **Async support** — Async variants of all service methods (`aiohttp`/`aioboto3`/`gcloud-aio`).
-- [ ] **Connection pooling** — Reuse clients per provider+config to avoid redundant auth handshakes.
-- [ ] **Retry policies** — Configurable retry/backoff strategy baked into the base blueprints.
-- [ ] **Config validation** — Pydantic models for provider configs instead of raw dicts.
-- [ ] **Credential chain** — Auto-resolve credentials from env vars, instance metadata, config files — not just explicit keys.
-- [ ] **Logging & observability** — Structured logging on every API call with request IDs for tracing.
+- [x] **Async support** — Async variants of all service methods via `asyncio.to_thread` + `AsyncMixin`.
+- [x] **Connection pooling** — Singleton `ClientCache` reuses clients per provider+config.
+- [x] **Retry policies** — Configurable retry/backoff decorator in `cloud.base.retry`.
+- [x] **Config validation** — Pydantic models for provider configs (`AWSConfig`, `GCPConfig`).
+- [x] **Credential chain** — Auto-resolve credentials from env vars via Pydantic `model_validator`.
+- [x] **Logging & observability** — Structured JSON logging with request IDs in `cloud.base.logger`.
 
 ### Packaging & Distribution
 
-- [ ] **Publish to PyPI** — Proper packaging with extras (`pip install cloudjack[aws]`, `cloudjack[gcp]`).
-- [ ] **Optional dependencies** — Only install `boto3` if using AWS, `google-cloud-*` if using GCP.
-- [ ] **CLI tool** — Thin CLI wrapper for common operations (e.g. `cloudjack secret get my_secret --provider aws`).
+- [ ] **Publish to PyPI** — Proper packaging with extras (`pip install cloudjack[aws]`, `cloudjack[gcp]`). Use `./publish.sh`.
+- [x] **Optional dependencies** — Only install `boto3` if using AWS, `google-cloud-*` if using GCP.
+- [x] **CLI tool** — `cloudjack --provider aws --service storage list-buckets`.
 
 ### Testing & CI
 
 - [ ] **Integration tests** — Test against real cloud APIs (LocalStack for AWS, emulator for GCP) in CI.
-- [ ] **Coverage reporting** — Enforce minimum coverage threshold in CI pipeline.
-- [ ] **GitHub Actions workflow** — Automated lint, test, publish on tag.
-- [ ] **Type checking** — Add `mypy --strict` to CI.
+- [x] **Coverage reporting** — Enforce minimum coverage threshold (80%) in `pyproject.toml`.
+- [x] **GitHub Actions workflow** — Automated lint, test, type-check on push/PR.
+- [x] **Type checking** — `mypy` config in `pyproject.toml`, runs in CI.
 
 ### Documentation
 
-- [ ] **API reference** — Auto-generated from docstrings (Sphinx or mkdocs).
-- [ ] **Migration guide** — How to switch from raw `boto3`/`google-cloud` to Cloudjack.
-- [ ] **Contributing guide** — Standards for adding new providers and services.
+- [x] **API reference** — Auto-generated from docstrings via mkdocs + mkdocstrings. Run `uv run mkdocs serve`.
+- [x] **Migration guide** — `docs/migration.md` — switching from raw SDKs to Cloudjack.
+- [x] **Contributing guide** — `CONTRIBUTING.md` — standards for adding providers and services.

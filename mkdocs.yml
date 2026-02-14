@@ -1,0 +1,101 @@
+site_name: Cloudjack
+site_description: Unified multi-cloud SDK for AWS and GCP
+site_url: https://github.com/gautam24s/cloudjack
+repo_url: https://github.com/gautam24s/cloudjack
+repo_name: gautam24s/cloudjack
+
+theme:
+  name: material
+  palette:
+    - scheme: slate
+      primary: deep purple
+      accent: amber
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+    - scheme: default
+      primary: deep purple
+      accent: amber
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+  features:
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.highlight
+    - content.code.copy
+
+plugins:
+  - search
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          options:
+            show_source: true
+            show_root_heading: true
+            show_root_full_path: false
+            show_category_heading: true
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+            members_order: source
+            docstring_style: google
+            merge_init_into_class: true
+            show_signature_annotations: true
+            separate_signature: true
+            signature_crossrefs: true
+            heading_level: 2
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - API Reference:
+      - Factory: api/factory.md
+      - Blueprints:
+          - Secret Manager: api/blueprints/secret_manager.md
+          - Storage: api/blueprints/storage.md
+          - Queue: api/blueprints/queue.md
+          - Compute: api/blueprints/compute.md
+          - DNS: api/blueprints/dns.md
+          - IAM: api/blueprints/iam.md
+          - Logging: api/blueprints/logging.md
+      - AWS:
+          - Secret Manager: api/aws/secret_manager.md
+          - Storage: api/aws/storage.md
+          - Queue: api/aws/queue.md
+          - Compute: api/aws/compute.md
+          - DNS: api/aws/dns.md
+          - IAM: api/aws/iam.md
+          - Logging: api/aws/logging.md
+      - GCP:
+          - Secret Manager: api/gcp/secret_manager.md
+          - Storage: api/gcp/storage.md
+          - Queue: api/gcp/queue.md
+          - Compute: api/gcp/compute.md
+          - DNS: api/gcp/dns.md
+          - IAM: api/gcp/iam.md
+          - Logging: api/gcp/logging.md
+      - Core:
+          - Config: api/core/config.md
+          - Retry: api/core/retry.md
+          - Client Cache: api/core/client_cache.md
+          - Logger: api/core/logger.md
+          - Async Support: api/core/async_support.md
+          - Exceptions: api/core/exceptions.md
+  - CLI: cli.md
+  - Migration Guide: migration.md
+  - Contributing: contributing.md
