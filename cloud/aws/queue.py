@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, NoReturn
 
 import boto3
 from botocore.exceptions import ClientError
@@ -23,7 +23,7 @@ _ERROR_MAP: dict[str, type[QueueError]] = {
 }
 
 
-def _handle(e: ClientError, msg: str) -> None:
+def _handle(e: ClientError, msg: str) -> NoReturn:
     exc = _ERROR_MAP.get(e.response["Error"]["Code"])
     raise (exc or QueueError)(msg) from e
 
@@ -67,7 +67,7 @@ class Queue(QueueBlueprint):
                 QueueName=queue_name,
                 Attributes=attrs or {},
             )
-            return resp["QueueUrl"]
+            return resp["QueueUrl"]  # type: ignore[no-any-return]
         except ClientError as e:
             _handle(e, f"Failed to create queue '{queue_name}'")
 
@@ -103,7 +103,7 @@ class Queue(QueueBlueprint):
             if prefix:
                 params["QueueNamePrefix"] = prefix
             resp = self.client.list_queues(**params)
-            return resp.get("QueueUrls", [])
+            return resp.get("QueueUrls", [])  # type: ignore[no-any-return]
         except ClientError as e:
             _handle(e, "Failed to list queues")
 
@@ -130,7 +130,7 @@ class Queue(QueueBlueprint):
             if "message_attributes" in kwargs:
                 params["MessageAttributes"] = kwargs["message_attributes"]
             resp = self.client.send_message(**params)
-            return resp["MessageId"]
+            return resp["MessageId"]  # type: ignore[no-any-return]
         except ClientError as e:
             raise MessageError(f"Failed to send message to '{queue_id}'") from e
 

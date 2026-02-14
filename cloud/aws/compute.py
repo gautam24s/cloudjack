@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, NoReturn
 
 import boto3
 from botocore.exceptions import ClientError
@@ -19,7 +19,7 @@ _ERROR_MAP: dict[str, type[ComputeError]] = {
 }
 
 
-def _handle(e: ClientError, msg: str) -> None:
+def _handle(e: ClientError, msg: str) -> NoReturn:
     exc = _ERROR_MAP.get(e.response["Error"]["Code"])
     raise (exc or ComputeError)(msg) from e
 
@@ -82,7 +82,7 @@ class Compute(ComputeBlueprint):
             if "user_data" in kwargs:
                 params["UserData"] = kwargs["user_data"]
             resp = self.client.run_instances(**params)
-            return resp["Instances"][0]["InstanceId"]
+            return resp["Instances"][0]["InstanceId"]  # type: ignore[no-any-return]
         except ClientError as e:
             _handle(e, f"Failed to create instance '{name}'")
 

@@ -66,7 +66,7 @@ class SecretManager(SecretManagerBlueprint):
         try:
             arn = f"arn:aws:secretsmanager:{self.region}:{self.account_id}:secret:{name}"
             response = self.client.get_secret_value(SecretId=arn)
-            return response.get("SecretString")
+            return response.get("SecretString")  # type: ignore[no-any-return]
         except ClientError as e:
             if e.response["Error"]["Code"] == "ResourceNotFoundException":
                 raise SecretNotFoundError(f"Secret '{name}' not found.")

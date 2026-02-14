@@ -63,7 +63,7 @@ class IAM(IAMBlueprint):
             role.stage = getattr(
                 iam_admin_v1.Role.RoleLaunchStage,
                 trust_policy.get("stage", "GA"),
-                iam_admin_v1.Role.RoleLaunchStage.GA,
+                iam_admin_v1.Role.RoleLaunchStage.GA,  # type: ignore[arg-type]
             )
             resp = self.client.create_role(
                 request={

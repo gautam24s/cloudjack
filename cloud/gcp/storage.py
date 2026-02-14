@@ -1,7 +1,8 @@
 """GCP Cloud Storage implementation of the Storage blueprint."""
 
 from datetime import timedelta
-from google.cloud import storage as gcs
+from typing import NoReturn
+from google.cloud import storage as gcs  # type: ignore[attr-defined]
 from google.api_core.exceptions import NotFound, Conflict
 from google.cloud.exceptions import GoogleCloudError
 
@@ -14,7 +15,7 @@ from cloud.base.exceptions import (
 from cloud.base import CloudStorageBlueprint
 
 
-def _handle_error(e: Exception, message: str):
+def _handle_error(e: Exception, message: str) -> NoReturn:
     """Raise a mapped exception or a generic StorageError."""
     if isinstance(e, NotFound):
         if "bucket" in str(e).lower():
@@ -101,7 +102,7 @@ class Storage(CloudStorageBlueprint):
         try:
             bucket = self.client.get_bucket(bucket_name)
             blob = bucket.blob(object_name)
-            return blob.download_as_bytes()
+            return blob.download_as_bytes()  # type: ignore[no-any-return]
         except (GoogleCloudError, NotFound) as e:
             _handle_error(e, f"Failed to get '{object_name}' from '{bucket_name}'.")
 
@@ -140,7 +141,7 @@ class Storage(CloudStorageBlueprint):
             bucket = self.client.get_bucket(bucket_name)
             blob = bucket.blob(object_name)
             expiration_td = timedelta(seconds=expiration)
-            return blob.generate_signed_url(
+            return blob.generate_signed_url(  # type: ignore[no-any-return]
                 expiration=expiration_td,
                 method=method,
                 content_type=kwargs.get("content_type"),

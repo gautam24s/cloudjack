@@ -1,6 +1,7 @@
 """AWS S3 implementation of the Storage blueprint."""
 
 import boto3
+from typing import NoReturn
 from botocore.exceptions import ClientError
 
 from cloud.base.exceptions import (
@@ -20,7 +21,7 @@ _ERROR_MAP = {
 }
 
 
-def _handle_client_error(e: ClientError, message: str):
+def _handle_client_error(e: ClientError, message: str) -> NoReturn:
     """Raise a mapped exception or a generic StorageError."""
     exc_class = _ERROR_MAP.get(e.response["Error"]["Code"])
     raise (exc_class or StorageError)(message) from e
@@ -203,7 +204,7 @@ class Storage(CloudStorageBlueprint):
         """
         try:
             response = self.client.get_object(Bucket=bucket_name, Key=object_name)
-            return response["Body"].read()
+            return response["Body"].read()  # type: ignore[no-any-return]
         except ClientError as e:
             _handle_client_error(e, f"Failed to get '{object_name}' from '{bucket_name}'.")
 
@@ -255,7 +256,7 @@ class Storage(CloudStorageBlueprint):
             if kwargs.get("response_type"):
                 params["ResponseContentType"] = kwargs["response_type"]
             
-            return self.client.generate_presigned_url(
+            return self.client.generate_presigned_url(  # type: ignore[no-any-return]
                 client_method,
                 Params=params,
                 ExpiresIn=expiration,

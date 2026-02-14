@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 from google.api_core import exceptions as gcp_exceptions
-from google.cloud import pubsub_v1
+from google.cloud import pubsub_v1  # type: ignore[attr-defined]
 from google.pubsub_v1.types import PubsubMessage
 
 from cloud.base.queue import QueueBlueprint
@@ -41,11 +41,11 @@ class Queue(QueueBlueprint):
 
     def _topic_path(self, name: str) -> str:
         """Build the fully-qualified topic path."""
-        return self.publisher.topic_path(self.project_id, name)
+        return self.publisher.topic_path(self.project_id, name)  # type: ignore[no-any-return]
 
     def _sub_path(self, name: str) -> str:
         """Build the fully-qualified subscription path."""
-        return self.subscriber.subscription_path(self.project_id, f"{name}-sub")
+        return self.subscriber.subscription_path(self.project_id, f"{name}-sub")  # type: ignore[no-any-return]
 
     # --- Queue lifecycle ---
 
@@ -147,7 +147,7 @@ class Queue(QueueBlueprint):
             future = self.publisher.publish(
                 topic_path, body.encode("utf-8"), **attrs
             )
-            return future.result()
+            return future.result()  # type: ignore[no-any-return]
         except Exception as e:
             raise MessageError(f"Failed to publish to '{queue_id}'") from e
 

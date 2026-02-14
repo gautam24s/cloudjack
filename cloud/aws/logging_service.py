@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import time
-from typing import Any
+from typing import Any, NoReturn
 
 import boto3
 from botocore.exceptions import ClientError
@@ -21,7 +21,7 @@ _ERROR_MAP: dict[str, type[LoggingError]] = {
 }
 
 
-def _handle(e: ClientError, msg: str) -> None:
+def _handle(e: ClientError, msg: str) -> NoReturn:
     exc = _ERROR_MAP.get(e.response["Error"]["Code"])
     raise (exc or LoggingError)(msg) from e
 

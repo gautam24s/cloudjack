@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from typing import Any
+from typing import Any, NoReturn
 
 import boto3
 from botocore.exceptions import ClientError
@@ -23,7 +23,7 @@ _ERROR_MAP: dict[str, type[IAMError]] = {
 }
 
 
-def _handle(e: ClientError, msg: str) -> None:
+def _handle(e: ClientError, msg: str) -> NoReturn:
     exc = _ERROR_MAP.get(e.response["Error"]["Code"])
     raise (exc or IAMError)(msg) from e
 
@@ -72,7 +72,7 @@ class IAM(IAMBlueprint):
             if "max_session_duration" in kwargs:
                 params["MaxSessionDuration"] = kwargs["max_session_duration"]
             resp = self.client.create_role(**params)
-            return resp["Role"]["Arn"]
+            return resp["Role"]["Arn"]  # type: ignore[no-any-return]
         except ClientError as e:
             _handle(e, f"Failed to create role '{role_name}'")
 

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import uuid
-from typing import Any
+from typing import Any, NoReturn
 
 import boto3
 from botocore.exceptions import ClientError
@@ -21,7 +21,7 @@ _ERROR_MAP: dict[str, type[DNSError]] = {
 }
 
 
-def _handle(e: ClientError, msg: str) -> None:
+def _handle(e: ClientError, msg: str) -> NoReturn:
     exc = _ERROR_MAP.get(e.response["Error"]["Code"])
     raise (exc or DNSError)(msg) from e
 
@@ -64,7 +64,7 @@ class DNS(DNSBlueprint):
                     "PrivateZone": kwargs.get("private", False),
                 },
             )
-            return resp["HostedZone"]["Id"].split("/")[-1]
+            return resp["HostedZone"]["Id"].split("/")[-1]  # type: ignore[no-any-return]
         except ClientError as e:
             _handle(e, f"Failed to create zone '{zone_name}'")
 

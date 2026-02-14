@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 from google.api_core import exceptions as gcp_exceptions
-from google.cloud import dns as cloud_dns
+from google.cloud import dns as cloud_dns  # type: ignore[attr-defined]
 
 from cloud.base.dns import DNSBlueprint
 from cloud.base.exceptions import (
