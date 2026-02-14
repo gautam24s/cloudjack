@@ -1,0 +1,3 @@
+# ComputeBlueprint
+
+::: cloud.base.compute

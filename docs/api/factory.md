@@ -1,0 +1,3 @@
+# Universal Factory
+
+::: cloud.factory

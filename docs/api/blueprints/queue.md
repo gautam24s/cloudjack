@@ -1,0 +1,3 @@
+# QueueBlueprint
+
+::: cloud.base.queue

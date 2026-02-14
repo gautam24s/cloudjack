@@ -1,0 +1,3 @@
+# DNSBlueprint
+
+::: cloud.base.dns

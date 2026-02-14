@@ -1,0 +1,3 @@
+# CloudStorageBlueprint
+
+::: cloud.base.storage

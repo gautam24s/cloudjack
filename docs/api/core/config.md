@@ -1,0 +1,3 @@
+# Configuration
+
+::: cloud.base.config
