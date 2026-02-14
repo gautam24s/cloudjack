@@ -1,55 +1,102 @@
+"""Cloud storage service blueprint."""
+
 from abc import ABC, abstractmethod
 
 
 class CloudStorageBlueprint(ABC):
-    """Abstract base class for cloud storage operations.
-    
-    Defines the interface for CRUD operations on storage buckets and objects
-    across different cloud providers.
+    """Abstract interface for cloud storage operations.
+
+    Defines bucket and object CRUD, plus signed-URL generation.
+    Maps to AWS S3 and GCP Cloud Storage.
     """
 
     # --- Bucket operations ---
 
     @abstractmethod
     def create_bucket(self, bucket_name: str) -> None:
-        """Create a new storage bucket."""
+        """Create a new storage bucket.
+
+        Args:
+            bucket_name: Globally unique bucket name.
+        """
         pass
 
     @abstractmethod
     def delete_bucket(self, bucket_name: str) -> None:
-        """Delete a storage bucket."""
+        """Delete an empty storage bucket.
+
+        Args:
+            bucket_name: Name of the bucket to delete.
+        """
         pass
 
     @abstractmethod
     def list_buckets(self) -> list[str]:
-        """List all storage buckets."""
+        """List all bucket names owned by the authenticated account.
+
+        Returns:
+            A list of bucket name strings.
+        """
         pass
 
     # --- Object operations ---
 
     @abstractmethod
     def upload_file(self, bucket_name: str, object_name: str, file_path: str) -> None:
-        """Upload a file to a storage bucket."""
+        """Upload a local file to a storage bucket.
+
+        Args:
+            bucket_name: Target bucket.
+            object_name: Destination object key.
+            file_path: Local filesystem path to upload.
+        """
         pass
 
     @abstractmethod
     def download_file(self, bucket_name: str, object_name: str, destination: str) -> None:
-        """Download a file from a storage bucket."""
+        """Download an object to a local file.
+
+        Args:
+            bucket_name: Source bucket.
+            object_name: Object key to download.
+            destination: Local path to write the downloaded file.
+        """
         pass
 
     @abstractmethod
     def delete_object(self, bucket_name: str, object_name: str) -> None:
-        """Delete an object from a storage bucket."""
+        """Delete an object from a storage bucket.
+
+        Args:
+            bucket_name: Bucket containing the object.
+            object_name: Object key to delete.
+        """
         pass
 
     @abstractmethod
     def list_objects(self, bucket_name: str, prefix: str = "") -> list[str]:
-        """List objects in a storage bucket, optionally filtered by prefix."""
+        """List object keys in a bucket.
+
+        Args:
+            bucket_name: Bucket to list.
+            prefix: Optional key prefix filter.
+
+        Returns:
+            A list of object key strings.
+        """
         pass
 
     @abstractmethod
     def get_object(self, bucket_name: str, object_name: str) -> bytes:
-        """Get the contents of an object as bytes."""
+        """Read the contents of an object.
+
+        Args:
+            bucket_name: Bucket containing the object.
+            object_name: Object key to read.
+
+        Returns:
+            The raw object bytes.
+        """
         pass
 
     @abstractmethod

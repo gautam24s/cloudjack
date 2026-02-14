@@ -1,3 +1,5 @@
+"""AWS Secrets Manager implementation of the SecretManager blueprint."""
+
 import boto3
 from botocore.exceptions import ClientError
 

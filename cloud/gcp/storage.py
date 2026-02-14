@@ -1,3 +1,5 @@
+"""GCP Cloud Storage implementation of the Storage blueprint."""
+
 from datetime import timedelta
 from google.cloud import storage as gcs
 from google.api_core.exceptions import NotFound, Conflict

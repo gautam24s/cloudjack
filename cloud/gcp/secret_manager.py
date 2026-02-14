@@ -1,3 +1,5 @@
+"""GCP Secret Manager implementation of the SecretManager blueprint."""
+
 from google.cloud import secretmanager_v1
 from google.api_core.exceptions import NotFound, AlreadyExists
 

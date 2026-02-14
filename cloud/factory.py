@@ -1,10 +1,23 @@
-"""
-Universal Factory
+"""Universal service factory.
+
+Provides :func:`universal_factory`, the single entry-point for creating
+cloud service clients.  The function dispatches to provider-specific
+factories (AWS, GCP) based on ``cloud_provider`` and returns a typed
+instance via ``@overload`` signatures so IDEs can autocomplete methods.
 """
 
 from typing import overload, Literal, Any
 
-from cloud.base import SecretManagerBlueprint, CloudStorageBlueprint
+from cloud.base import (
+    SecretManagerBlueprint,
+    CloudStorageBlueprint,
+    QueueBlueprint,
+    ComputeBlueprint,
+    DNSBlueprint,
+    IAMBlueprint,
+    LoggingBlueprint,
+)
+from cloud.base.config import validate_config
 from cloud.aws.factory import SERVICE_REGISTRY as AWS_SERVICES
 from cloud.gcp.factory import SERVICE_REGISTRY as GCP_SERVICES
 
@@ -18,7 +31,7 @@ _FACTORY_REGISTRY: dict[str, dict[str, type]] = {
 
 @overload
 def universal_factory(
-    service_name: Literal["secret_manager"], cloud_provider: Literal["aws"], config: dict
+    service_name: Literal["secret_manager"], cloud_provider: str, config: dict
 ) -> SecretManagerBlueprint: ...
 
 
@@ -26,6 +39,36 @@ def universal_factory(
 def universal_factory(
     service_name: Literal["storage"], cloud_provider: str, config: dict
 ) -> CloudStorageBlueprint: ...
+
+
+@overload
+def universal_factory(
+    service_name: Literal["queue"], cloud_provider: str, config: dict
+) -> QueueBlueprint: ...
+
+
+@overload
+def universal_factory(
+    service_name: Literal["compute"], cloud_provider: str, config: dict
+) -> ComputeBlueprint: ...
+
+
+@overload
+def universal_factory(
+    service_name: Literal["dns"], cloud_provider: str, config: dict
+) -> DNSBlueprint: ...
+
+
+@overload
+def universal_factory(
+    service_name: Literal["iam"], cloud_provider: str, config: dict
+) -> IAMBlueprint: ...
+
+
+@overload
+def universal_factory(
+    service_name: Literal["logging"], cloud_provider: str, config: dict
+) -> LoggingBlueprint: ...
 
 
 def universal_factory(
@@ -51,4 +94,5 @@ def universal_factory(
         raise ValueError(f"Unsupported service '{service_name}' for provider '{cloud_provider}'")
     
     service_class = provider_services[service_name]
+    validate_config(cloud_provider, config)
     return service_class(config)

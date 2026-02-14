@@ -1,3 +1,5 @@
+"""AWS S3 implementation of the Storage blueprint."""
+
 import boto3
 from botocore.exceptions import ClientError
 
