@@ -66,27 +66,50 @@ class IAMBlueprint(ABC):
     # --- Policy management ---
 
     @abstractmethod
-    def attach_policy(self, role_name: str, policy_identifier: str) -> None:
+    def attach_policy(self, role_name: str, policy_identifier: str, **kwargs: Any) -> None:
         """Attach a managed policy to a role.
 
         Args:
             role_name: Target role.
-            policy_identifier: Policy identifier to attach.
+            policy_identifier: Policy name or member to attach.
 
-                - **AWS**: IAM policy ARN (e.g. ``arn:aws:iam::aws:policy/ReadOnly``).
+                - **AWS**: Policy name (e.g. ``ReadOnlyAccess`` or
+                  ``MyCustomPolicy``). The full ARN is constructed
+                  automatically. Pass ``managed=True`` for AWS-managed
+                  policies. Full ARNs (``arn:aws:...``) are also accepted.
                 - **GCP**: Member string (e.g. ``user:alice@example.com``).
+
+            **kwargs: Provider-specific options:
+
+                **AWS (IAM):**
+                    - ``managed``: If ``True``, treat as an AWS-managed
+                      policy (default ``False``).
+
+                **GCP (IAM Admin):**
+                    *(no additional kwargs)*
         """
 
     @abstractmethod
-    def detach_policy(self, role_name: str, policy_identifier: str) -> None:
+    def detach_policy(self, role_name: str, policy_identifier: str, **kwargs: Any) -> None:
         """Detach a managed policy from a role.
 
         Args:
             role_name: Target role.
-            policy_identifier: Policy identifier to detach.
+            policy_identifier: Policy name or member to detach.
 
-                - **AWS**: IAM policy ARN.
+                - **AWS**: Policy name. The full ARN is constructed
+                  automatically. Pass ``managed=True`` for AWS-managed
+                  policies. Full ARNs are also accepted.
                 - **GCP**: Member string.
+
+            **kwargs: Provider-specific options:
+
+                **AWS (IAM):**
+                    - ``managed``: If ``True``, treat as an AWS-managed
+                      policy (default ``False``).
+
+                **GCP (IAM Admin):**
+                    *(no additional kwargs)*
         """
 
     @abstractmethod

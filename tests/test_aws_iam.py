@@ -31,14 +31,20 @@ TRUST_POLICY = {
 @pytest.fixture
 def svc():
     with patch("cloud.aws.iam.boto3") as mock_boto:
-        mock_client = MagicMock()
-        mock_boto.client.return_value = mock_client
+        mock_iam_client = MagicMock()
+        mock_sts_client = MagicMock()
+        mock_sts_client.get_caller_identity.return_value = {"Account": "123456789012"}
+
+        def pick_client(service, **kwargs):
+            return {"iam": mock_iam_client, "sts": mock_sts_client}[service]
+
+        mock_boto.client.side_effect = pick_client
         instance = IAM({
             "aws_access_key_id": "key",
             "aws_secret_access_key": "secret",
             "region_name": "us-east-1",
         })
-        yield instance, mock_client
+        yield instance, mock_iam_client
 
 
 # --- create_role ---
@@ -115,19 +121,36 @@ class TestListRoles:
 # --- attach_policy ---
 
 class TestAttachPolicy:
-    def test_success(self, svc):
+    def test_success_customer_managed(self, svc):
         inst, client = svc
-        inst.attach_policy("admin", "arn:aws:iam::aws:policy/ReadOnly")
+        inst.attach_policy("admin", "MyPolicy")
         client.attach_role_policy.assert_called_once_with(
             RoleName="admin",
-            PolicyArn="arn:aws:iam::aws:policy/ReadOnly",
+            PolicyArn="arn:aws:iam::123456789012:policy/MyPolicy",
+        )
+
+    def test_success_aws_managed(self, svc):
+        inst, client = svc
+        inst.attach_policy("admin", "ReadOnlyAccess", managed=True)
+        client.attach_role_policy.assert_called_once_with(
+            RoleName="admin",
+            PolicyArn="arn:aws:iam::aws:policy/ReadOnlyAccess",
+        )
+
+    def test_full_arn_passthrough(self, svc):
+        inst, client = svc
+        full_arn = "arn:aws:iam::aws:policy/ReadOnly"
+        inst.attach_policy("admin", full_arn)
+        client.attach_role_policy.assert_called_once_with(
+            RoleName="admin",
+            PolicyArn=full_arn,
         )
 
     def test_not_found(self, svc):
         inst, client = svc
         client.attach_role_policy.side_effect = _client_error("NoSuchEntity")
         with pytest.raises(RoleNotFoundError):
-            inst.attach_policy("missing", "arn")
+            inst.attach_policy("missing", "MyPolicy")
 
 
 # --- detach_policy ---
@@ -135,14 +158,17 @@ class TestAttachPolicy:
 class TestDetachPolicy:
     def test_success(self, svc):
         inst, client = svc
-        inst.detach_policy("admin", "arn:aws:iam::aws:policy/ReadOnly")
-        client.detach_role_policy.assert_called_once()
+        inst.detach_policy("admin", "ReadOnlyAccess", managed=True)
+        client.detach_role_policy.assert_called_once_with(
+            RoleName="admin",
+            PolicyArn="arn:aws:iam::aws:policy/ReadOnlyAccess",
+        )
 
     def test_not_found(self, svc):
         inst, client = svc
         client.detach_role_policy.side_effect = _client_error("NoSuchEntity")
         with pytest.raises(RoleNotFoundError):
-            inst.detach_policy("missing", "arn")
+            inst.detach_policy("missing", "MyPolicy")
 
 
 # --- list_policies ---

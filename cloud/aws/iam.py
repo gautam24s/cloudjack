@@ -48,6 +48,33 @@ class IAM(IAMBlueprint):
             aws_secret_access_key=config.get("aws_secret_access_key"),
             region_name=config.get("region_name"),
         )
+        sts = boto3.client(
+            "sts",
+            aws_access_key_id=config.get("aws_access_key_id"),
+            aws_secret_access_key=config.get("aws_secret_access_key"),
+            region_name=config.get("region_name"),
+        )
+        self.account_id: str = sts.get_caller_identity()["Account"]
+
+    def _build_policy_arn(self, policy_name: str, **kwargs: Any) -> str:
+        """Construct a full IAM policy ARN from a policy name.
+
+        Args:
+            policy_name: Short policy name (e.g. ``ReadOnlyAccess``,
+                ``MyCustomPolicy``). If it already looks like an ARN
+                (starts with ``arn:``), it is returned as-is.
+            **kwargs:
+                managed: If ``True``, treat as an AWS-managed policy
+                    (account = ``aws``). Default ``False`` (customer-managed,
+                    uses ``self.account_id``).
+
+        Returns:
+            Full policy ARN string.
+        """
+        if policy_name.startswith("arn:"):
+            return policy_name
+        account = "aws" if kwargs.get("managed") else self.account_id
+        return f"arn:aws:iam::{account}:policy/{policy_name}"
 
     # --- Role management ---
 
@@ -122,37 +149,47 @@ class IAM(IAMBlueprint):
 
     # --- Policy management ---
 
-    def attach_policy(self, role_name: str, policy_identifier: str) -> None:
+    def attach_policy(self, role_name: str, policy_identifier: str, **kwargs: Any) -> None:
         """Attach a managed policy to an IAM role.
 
         Args:
             role_name: Target role name.
-            policy_identifier: ARN of the policy to attach.
+            policy_identifier: Policy name (e.g. ``ReadOnlyAccess``).
+                The full ARN is constructed automatically.
+            **kwargs:
+                managed: If ``True``, treat as an AWS-managed policy.
+                    Default ``False`` (customer-managed).
 
         Raises:
             RoleNotFoundError: If the role does not exist.
             PolicyNotFoundError: If the policy does not exist.
         """
         try:
+            arn = self._build_policy_arn(policy_identifier, **kwargs)
             self.client.attach_role_policy(
-                RoleName=role_name, PolicyArn=policy_identifier
+                RoleName=role_name, PolicyArn=arn
             )
         except ClientError as e:
             _handle(e, f"Failed to attach policy '{policy_identifier}' to role '{role_name}'")
 
-    def detach_policy(self, role_name: str, policy_identifier: str) -> None:
+    def detach_policy(self, role_name: str, policy_identifier: str, **kwargs: Any) -> None:
         """Detach a managed policy from an IAM role.
 
         Args:
             role_name: Target role name.
-            policy_identifier: ARN of the policy to detach.
+            policy_identifier: Policy name (e.g. ``ReadOnlyAccess``).
+                The full ARN is constructed automatically.
+            **kwargs:
+                managed: If ``True``, treat as an AWS-managed policy.
+                    Default ``False`` (customer-managed).
 
         Raises:
             RoleNotFoundError: If the role does not exist.
         """
         try:
+            arn = self._build_policy_arn(policy_identifier, **kwargs)
             self.client.detach_role_policy(
-                RoleName=role_name, PolicyArn=policy_identifier
+                RoleName=role_name, PolicyArn=arn
             )
         except ClientError as e:
             _handle(e, f"Failed to detach policy '{policy_identifier}' from role '{role_name}'")

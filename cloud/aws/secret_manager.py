@@ -98,7 +98,7 @@ class SecretManager(SecretManagerBlueprint):
         """Update an existing secret in AWS Secrets Manager.
         
         Args:
-            name: The name or ARN of the secret to update.
+            name: The name of the secret to update.
             value: The new secret value.
         
         Raises:
@@ -106,7 +106,7 @@ class SecretManager(SecretManagerBlueprint):
             SecretManagerError: If update fails for any other reason.
         """
         try:
-            arn = f"arn:aws:secretsmanager:{self.region}:{self.client.get_caller_identity()['Account']}:secret:{name}"
+            arn = f"arn:aws:secretsmanager:{self.region}:{self.account_id}:secret:{name}"
             self.client.update_secret(SecretId=arn, SecretString=value)
         except ClientError as e:
             if e.response["Error"]["Code"] == "ResourceNotFoundException":
@@ -120,14 +120,14 @@ class SecretManager(SecretManagerBlueprint):
         This method permanently deletes the secret without recovery period.
         
         Args:
-            name: The name or ARN of the secret to delete.
+            name: The name of the secret to delete.
         
         Raises:
             SecretNotFoundError: If the secret does not exist.
             SecretManagerError: If deletion fails for any other reason.
         """
         try:
-            arn = f"arn:aws:secretsmanager:{self.region}:{self.client.get_caller_identity()['Account']}:secret:{name}"
+            arn = f"arn:aws:secretsmanager:{self.region}:{self.account_id}:secret:{name}"
             self.client.delete_secret(SecretId=arn, ForceDeleteWithoutRecovery=True)
         except ClientError as e:
             if e.response["Error"]["Code"] == "ResourceNotFoundException":

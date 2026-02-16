@@ -155,7 +155,7 @@ class IAM(IAMBlueprint):
             }
         )
 
-    def attach_policy(self, role_name: str, policy_identifier: str) -> None:
+    def attach_policy(self, role_name: str, policy_identifier: str, **kwargs: Any) -> None:
         """Attach a role binding for a member.
 
         Args:
@@ -184,7 +184,7 @@ class IAM(IAMBlueprint):
                 f"Failed to attach '{policy_identifier}' to '{role_name}'"
             ) from e
 
-    def detach_policy(self, role_name: str, policy_identifier: str) -> None:
+    def detach_policy(self, role_name: str, policy_identifier: str, **kwargs: Any) -> None:
         """Remove a member from a role binding in the project IAM policy.
 
         Args:
