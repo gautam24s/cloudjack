@@ -136,14 +136,14 @@ class Queue(QueueBlueprint):
         Args:
             queue_id: Topic name (not full path).
             body: Message body.
-            **kwargs: ``attributes`` dict for Pub/Sub message attributes.
+            **kwargs: ``message_attributes`` dict for Pub/Sub message attributes.
 
         Returns:
             Published message ID.
         """
         try:
             topic_path = self._topic_path(queue_id)
-            attrs = kwargs.get("attributes", {})
+            attrs = kwargs.get("message_attributes", {})
             future = self.publisher.publish(
                 topic_path, body.encode("utf-8"), **attrs
             )

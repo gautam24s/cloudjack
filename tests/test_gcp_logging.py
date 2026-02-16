@@ -146,7 +146,7 @@ class TestReadLogs:
     def test_with_custom_filter(self, svc):
         inst, client = svc
         client.list_entries.return_value = []
-        inst.read_logs("my-log", filter='severity="ERROR"')
+        inst.read_logs("my-log", filter_pattern='severity="ERROR"')
         call_kwargs = client.list_entries.call_args[1]
         assert "ERROR" in call_kwargs["filter_"]
 

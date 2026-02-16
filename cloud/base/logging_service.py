@@ -18,7 +18,14 @@ class LoggingBlueprint(ABC):
 
         Args:
             name: Log group name.
-            **kwargs: Provider-specific options (retention, tags, …).
+            **kwargs: Provider-specific options:
+
+                **AWS (CloudWatch Logs):**
+                    - ``retention_days``: Log retention period in days.
+
+                **GCP (Cloud Logging):**
+                    *(log groups are created implicitly; this is a no-op
+                    or creates a named logger resource)*
         """
 
     @abstractmethod
@@ -46,7 +53,13 @@ class LoggingBlueprint(ABC):
             log_group: Target log group name.
             message: Log message string.
             severity: Log severity (DEBUG, INFO, WARNING, ERROR, CRITICAL).
-            **kwargs: Provider-specific options (labels, stream name, …).
+            **kwargs: Provider-specific options:
+
+                **AWS (CloudWatch Logs):**
+                    - ``stream_name``: Target log stream (default ``"default"``).
+
+                **GCP (Cloud Logging):**
+                    - ``labels``: Dict of key-value labels to attach.
         """
 
     @abstractmethod
@@ -64,5 +77,16 @@ class LoggingBlueprint(ABC):
         Args:
             log_group: Log group to read from.
             limit: Maximum number of entries to return.
-            **kwargs: Provider-specific filters (start/end time, filter pattern, …).
+            **kwargs: Provider-specific filters:
+
+                **Common (both providers):**
+                    - ``filter_pattern``: Filter/search string for log entries.
+
+                **AWS (CloudWatch Logs):**
+                    - ``start_time``: Start time in epoch milliseconds.
+                    - ``end_time``: End time in epoch milliseconds.
+
+                **GCP (Cloud Logging):**
+                    *(filter_pattern is appended to the Cloud Logging
+                    filter query)*
         """

@@ -155,20 +155,20 @@ class IAM(IAMBlueprint):
             }
         )
 
-    def attach_policy(self, role_name: str, policy_arn: str) -> None:
+    def attach_policy(self, role_name: str, policy_identifier: str) -> None:
         """Attach a role binding for a member.
 
         Args:
             role_name: Full GCP role name (e.g. ``roles/viewer``
                        or ``projects/<p>/roles/<r>``).
-            policy_arn: Member string (e.g. ``user:alice@example.com``).
+            policy_identifier: Member string (e.g. ``user:alice@example.com``).
         """
         try:
             policy = self._get_policy()
             for binding in policy.bindings:
                 if binding.role == role_name:
-                    if policy_arn not in binding.members:
-                        binding.members.append(policy_arn)
+                    if policy_identifier not in binding.members:
+                        binding.members.append(policy_identifier)
                     self._set_policy(policy)
                     return
             # No existing binding for this role → create one
@@ -176,20 +176,20 @@ class IAM(IAMBlueprint):
 
             new_binding = policy_pb2.Binding()
             new_binding.role = role_name
-            new_binding.members.append(policy_arn)
+            new_binding.members.append(policy_identifier)
             policy.bindings.append(new_binding)
             self._set_policy(policy)
         except Exception as e:
             raise IAMError(
-                f"Failed to attach '{policy_arn}' to '{role_name}'"
+                f"Failed to attach '{policy_identifier}' to '{role_name}'"
             ) from e
 
-    def detach_policy(self, role_name: str, policy_arn: str) -> None:
+    def detach_policy(self, role_name: str, policy_identifier: str) -> None:
         """Remove a member from a role binding in the project IAM policy.
 
         Args:
             role_name: GCP role (e.g. ``roles/viewer``).
-            policy_arn: Member string (e.g. ``user:alice@example.com``).
+            policy_identifier: Member string (e.g. ``user:alice@example.com``).
 
         Raises:
             IAMError: On API failure.
@@ -197,13 +197,13 @@ class IAM(IAMBlueprint):
         try:
             policy = self._get_policy()
             for binding in policy.bindings:
-                if binding.role == role_name and policy_arn in binding.members:
-                    binding.members.remove(policy_arn)
+                if binding.role == role_name and policy_identifier in binding.members:
+                    binding.members.remove(policy_identifier)
                     break
             self._set_policy(policy)
         except Exception as e:
             raise IAMError(
-                f"Failed to detach '{policy_arn}' from '{role_name}'"
+                f"Failed to detach '{policy_identifier}' from '{role_name}'"
             ) from e
 
     def list_policies(self, **kwargs: Any) -> list[dict[str, Any]]:
@@ -211,14 +211,14 @@ class IAM(IAMBlueprint):
 
         Returns:
             One dict per binding with ``policy_name`` (role) and
-            ``policy_arn`` (members list).
+            ``policy_identifier`` (role identifier).
         """
         try:
             policy = self._get_policy()
             return [
                 {
                     "policy_name": b.role,
-                    "policy_arn": b.role,
+                    "policy_identifier": b.role,
                     "members": list(b.members),
                 }
                 for b in policy.bindings

@@ -22,7 +22,15 @@ class QueueBlueprint(ABC):
 
         Args:
             queue_name: Logical queue name.
-            **kwargs: Provider-specific creation options.
+            **kwargs: Provider-specific creation options:
+
+                **AWS (SQS):**
+                    - ``delay_seconds``: Default delivery delay for messages.
+                    - ``visibility_timeout``: Default visibility timeout.
+
+                **GCP (Pub/Sub):**
+                    - ``ack_deadline_seconds``: Acknowledgement deadline
+                      (default 60).
 
         Returns:
             Queue identifier (URL for SQS, subscription path for Pub/Sub).
@@ -45,7 +53,17 @@ class QueueBlueprint(ABC):
         Args:
             queue_id: Queue identifier.
             body: Message body (string).
-            **kwargs: Provider-specific options (delay, attributes, …).
+            **kwargs: Provider-specific options:
+
+                **Common (both providers):**
+                    - ``message_attributes``: Dict of message metadata
+                      attributes.
+
+                **AWS (SQS):**
+                    - ``delay_seconds``: Per-message delivery delay.
+
+                **GCP (Pub/Sub):**
+                    *(attributes are passed as Pub/Sub message attributes)*
 
         Returns:
             Provider-assigned message ID.
@@ -65,7 +83,14 @@ class QueueBlueprint(ABC):
         Args:
             queue_id: Queue identifier.
             max_messages: Maximum number of messages to retrieve.
-            **kwargs: Provider-specific options (wait time, visibility, …).
+            **kwargs: Provider-specific options:
+
+                **AWS (SQS):**
+                    - ``wait_time_seconds``: Long-poll wait time.
+                    - ``visibility_timeout``: Per-receive visibility timeout.
+
+                **GCP (Pub/Sub):**
+                    *(no additional kwargs at this time)*
         """
 
     @abstractmethod

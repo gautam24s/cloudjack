@@ -59,7 +59,7 @@ class SecretManager(SecretManagerBlueprint):
         except Exception as e:
             raise SecretManagerError(f"Failed to retrieve secret '{name}': {str(e)}")
 
-    def create_secret(self, name: str, value: str):
+    def create_secret(self, name: str, value: str) -> None:
         """Create a new secret in GCP Secret Manager.
 
         Args:
@@ -90,7 +90,7 @@ class SecretManager(SecretManagerBlueprint):
         except Exception as e:
             raise SecretManagerError(f"Failed to create secret '{name}': {str(e)}")
 
-    def update_secret(self, name: str, value: str):
+    def update_secret(self, name: str, value: str) -> None:
         """Update an existing secret in GCP Secret Manager.
 
         Args:
@@ -117,7 +117,7 @@ class SecretManager(SecretManagerBlueprint):
         except Exception as e:
             raise SecretManagerError(f"Failed to update secret '{name}': {str(e)}")
     
-    def delete_secret(self, name: str):
+    def delete_secret(self, name: str) -> None:
         """Delete a secret from GCP Secret Manager.
 
         Args:

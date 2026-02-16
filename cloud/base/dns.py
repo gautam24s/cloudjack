@@ -18,7 +18,18 @@ class DNSBlueprint(ABC):
 
         Args:
             zone_name: Fully qualified domain (e.g. ``example.com.``).
-            **kwargs: Provider-specific options (description, visibility, …).
+            **kwargs: Provider-specific options:
+
+                **AWS (Route 53):**
+                    - ``caller_reference``: Unique string to identify the request
+                      (auto-generated UUID if omitted).
+                    - ``comment``: Zone description.
+                    - ``private``: Whether to create a private hosted zone.
+
+                **GCP (Cloud DNS):**
+                    - ``description``: Zone description.
+                    - ``visibility``: ``"public"`` or ``"private"`` (default ``"public"``).
+                    - ``dns_name``: Override the DNS name (defaults to *zone_name*).
 
         Returns:
             Zone identifier.
@@ -55,7 +66,14 @@ class DNSBlueprint(ABC):
             record_type: Record type (A, AAAA, CNAME, MX, TXT, …).
             values: List of record values.
             ttl: Time-to-live in seconds.
-            **kwargs: Provider-specific options.
+            **kwargs: Provider-specific options:
+
+                **AWS (Route 53):**
+                    - ``action``: Change-batch action (default ``UPSERT``,
+                      also ``CREATE``, ``DELETE``).
+
+                **GCP (Cloud DNS):**
+                    *(no additional kwargs at this time)*
         """
 
     @abstractmethod

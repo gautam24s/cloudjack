@@ -135,7 +135,7 @@ class Logging(LoggingBlueprint):
         Args:
             log_group: Logger name to read from.
             limit: Maximum entries to return.
-            **kwargs: ``filter`` — additional Cloud Logging filter string.
+            **kwargs: ``filter_pattern`` — additional Cloud Logging filter string.
 
         Returns:
             List of dicts with ``timestamp``, ``message``, ``severity``.
@@ -145,8 +145,8 @@ class Logging(LoggingBlueprint):
         """
         try:
             filter_str = f'logName="projects/{self.project_id}/logs/{log_group}"'
-            if "filter" in kwargs:
-                filter_str += f" AND {kwargs['filter']}"
+            if "filter_pattern" in kwargs:
+                filter_str += f" AND {kwargs['filter_pattern']}"
             entries = self.client.list_entries(
                 filter_=filter_str,
                 page_size=limit,

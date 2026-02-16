@@ -24,7 +24,20 @@ class IAMBlueprint(ABC):
         Args:
             role_name: Name of the role.
             trust_policy: Trust / assume-role policy document.
-            **kwargs: Provider-specific options (description, tags, …).
+
+                - **AWS**: Standard IAM assume-role policy JSON.
+                - **GCP**: Dict with ``title``, ``description``,
+                  ``permissions`` (list of strings), and optional
+                  ``stage`` (default ``GA``).
+
+            **kwargs: Provider-specific options:
+
+                **AWS (IAM):**
+                    - ``description``: Role description.
+                    - ``max_session_duration``: Max session duration in seconds.
+
+                **GCP (IAM Admin):**
+                    *(options encoded in trust_policy dict)*
 
         Returns:
             Role identifier (ARN for AWS, full name for GCP).
@@ -39,26 +52,56 @@ class IAMBlueprint(ABC):
         """List roles.
 
         Each dict contains at least ``role_name`` and ``role_id``.
+
+        Args:
+            **kwargs: Provider-specific filters:
+
+                **AWS (IAM):**
+                    - ``path_prefix``: Filter roles by IAM path prefix.
+
+                **GCP (IAM Admin):**
+                    - ``parent``: Override the default project scope.
         """
 
     # --- Policy management ---
 
     @abstractmethod
-    def attach_policy(self, role_name: str, policy_arn: str) -> None:
+    def attach_policy(self, role_name: str, policy_identifier: str) -> None:
         """Attach a managed policy to a role.
 
         Args:
             role_name: Target role.
-            policy_arn: Policy ARN or identifier to attach.
+            policy_identifier: Policy identifier to attach.
+
+                - **AWS**: IAM policy ARN (e.g. ``arn:aws:iam::aws:policy/ReadOnly``).
+                - **GCP**: Member string (e.g. ``user:alice@example.com``).
         """
 
     @abstractmethod
-    def detach_policy(self, role_name: str, policy_arn: str) -> None:
-        """Detach a managed policy from a role."""
+    def detach_policy(self, role_name: str, policy_identifier: str) -> None:
+        """Detach a managed policy from a role.
+
+        Args:
+            role_name: Target role.
+            policy_identifier: Policy identifier to detach.
+
+                - **AWS**: IAM policy ARN.
+                - **GCP**: Member string.
+        """
 
     @abstractmethod
     def list_policies(self, **kwargs: Any) -> list[dict[str, Any]]:
         """List available managed policies.
 
-        Each dict contains at least ``policy_name`` and ``policy_arn``.
+        Each dict contains at least ``policy_name`` and ``policy_identifier``.
+
+        Args:
+            **kwargs: Provider-specific filters:
+
+                **AWS (IAM):**
+                    - ``scope``: Policy scope (default ``Local``).
+                    - ``path_prefix``: Filter by IAM path prefix.
+
+                **GCP (IAM Admin):**
+                    *(returns project-level IAM bindings, no additional kwargs)*
         """

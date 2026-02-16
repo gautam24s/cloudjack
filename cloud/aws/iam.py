@@ -122,12 +122,12 @@ class IAM(IAMBlueprint):
 
     # --- Policy management ---
 
-    def attach_policy(self, role_name: str, policy_arn: str) -> None:
+    def attach_policy(self, role_name: str, policy_identifier: str) -> None:
         """Attach a managed policy to an IAM role.
 
         Args:
             role_name: Target role name.
-            policy_arn: ARN of the policy to attach.
+            policy_identifier: ARN of the policy to attach.
 
         Raises:
             RoleNotFoundError: If the role does not exist.
@@ -135,27 +135,27 @@ class IAM(IAMBlueprint):
         """
         try:
             self.client.attach_role_policy(
-                RoleName=role_name, PolicyArn=policy_arn
+                RoleName=role_name, PolicyArn=policy_identifier
             )
         except ClientError as e:
-            _handle(e, f"Failed to attach policy '{policy_arn}' to role '{role_name}'")
+            _handle(e, f"Failed to attach policy '{policy_identifier}' to role '{role_name}'")
 
-    def detach_policy(self, role_name: str, policy_arn: str) -> None:
+    def detach_policy(self, role_name: str, policy_identifier: str) -> None:
         """Detach a managed policy from an IAM role.
 
         Args:
             role_name: Target role name.
-            policy_arn: ARN of the policy to detach.
+            policy_identifier: ARN of the policy to detach.
 
         Raises:
             RoleNotFoundError: If the role does not exist.
         """
         try:
             self.client.detach_role_policy(
-                RoleName=role_name, PolicyArn=policy_arn
+                RoleName=role_name, PolicyArn=policy_identifier
             )
         except ClientError as e:
-            _handle(e, f"Failed to detach policy '{policy_arn}' from role '{role_name}'")
+            _handle(e, f"Failed to detach policy '{policy_identifier}' from role '{role_name}'")
 
     def list_policies(self, **kwargs: Any) -> list[dict[str, Any]]:
         """List IAM managed policies.
@@ -180,7 +180,7 @@ class IAM(IAMBlueprint):
             return [
                 {
                     "policy_name": p["PolicyName"],
-                    "policy_arn": p["Arn"],
+                    "policy_identifier": p["Arn"],
                     "create_date": str(p.get("CreateDate", "")),
                 }
                 for p in resp.get("Policies", [])
