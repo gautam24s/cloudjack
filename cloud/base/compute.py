@@ -24,23 +24,21 @@ class ComputeBlueprint(ABC):
             name: Display name for the instance.
             instance_type: Machine type (e.g. ``t3.micro``, ``e2-micro``).
             image_id: OS image identifier (AMI ID / image family).
-            **kwargs: Provider-specific options:
 
-                **AWS (EC2):**
-                    - ``key_name``: EC2 key pair name for SSH access.
-                    - ``security_group_ids``: List of security group IDs.
-                    - ``subnet_id``: VPC subnet ID.
-                    - ``user_data``: Instance bootstrap script.
-                    - ``min_count``: Minimum instances to launch (default 1).
-                    - ``max_count``: Maximum instances to launch (default 1).
-
-                **GCP (Compute Engine):**
-                    - ``zone``: Compute zone (e.g. ``us-central1-a``).
-                    - ``network``: Network name (default ``global/networks/default``).
-                    - ``subnet``: Subnetwork name.
-                    - ``preemptible``: Whether to use a preemptible VM.
-                    - ``service_account_email``: Service account for the VM.
-                    - ``metadata``: Dict of instance metadata key-value pairs.
+        Keyword Args:
+            key_name (str): EC2 key pair name for SSH access *(AWS)*.
+            security_group_ids (list[str]): List of security group IDs *(AWS)*.
+            subnet_id (str): VPC subnet ID *(AWS)*.
+            user_data (str): Instance bootstrap script *(AWS)*.
+            min_count (int): Minimum instances to launch, default ``1`` *(AWS)*.
+            max_count (int): Maximum instances to launch, default ``1`` *(AWS)*.
+            zone (str): Compute zone, e.g. ``us-central1-a`` *(GCP)*.
+            network (str): Network name, default
+                ``global/networks/default`` *(GCP)*.
+            subnet (str): Subnetwork name *(GCP)*.
+            preemptible (bool): Whether to use a preemptible VM *(GCP)*.
+            service_account_email (str): Service account for the VM *(GCP)*.
+            metadata (dict): Dict of instance metadata key-value pairs *(GCP)*.
 
         Returns:
             Instance ID.
@@ -67,16 +65,12 @@ class ComputeBlueprint(ABC):
             - ``name``
             - ``state`` (running / stopped / terminated / …)
 
-        Args:
-            **kwargs: Provider-specific filters:
-
-                **AWS (EC2):**
-                    - ``filters``: List of EC2 API filter dicts
-                      (e.g. ``[{"Name": "instance-state-name", "Values": ["running"]}]``).
-
-                **GCP (Compute Engine):**
-                    - ``zone``: Compute zone to list instances from.
-                    - ``filter``: GCP API filter string.
+        Keyword Args:
+            filters (list[dict]): List of EC2 API filter dicts, e.g.
+                ``[{"Name": "instance-state-name", "Values": ["running"]}]``
+                *(AWS)*.
+            zone (str): Compute zone to list instances from *(GCP)*.
+            filter (str): GCP API filter string *(GCP)*.
         """
 
     @abstractmethod

@@ -18,14 +18,9 @@ class LoggingBlueprint(ABC):
 
         Args:
             name: Log group name.
-            **kwargs: Provider-specific options:
 
-                **AWS (CloudWatch Logs):**
-                    - ``retention_days``: Log retention period in days.
-
-                **GCP (Cloud Logging):**
-                    *(log groups are created implicitly; this is a no-op
-                    or creates a named logger resource)*
+        Keyword Args:
+            retention_days (int): Log retention period in days *(AWS)*.
         """
 
     @abstractmethod
@@ -53,13 +48,11 @@ class LoggingBlueprint(ABC):
             log_group: Target log group name.
             message: Log message string.
             severity: Log severity (DEBUG, INFO, WARNING, ERROR, CRITICAL).
-            **kwargs: Provider-specific options:
 
-                **AWS (CloudWatch Logs):**
-                    - ``stream_name``: Target log stream (default ``"default"``).
-
-                **GCP (Cloud Logging):**
-                    - ``labels``: Dict of key-value labels to attach.
+        Keyword Args:
+            stream_name (str): Target log stream, default
+                ``"default"`` *(AWS)*.
+            labels (dict): Dict of key-value labels to attach *(GCP)*.
         """
 
     @abstractmethod
@@ -77,16 +70,10 @@ class LoggingBlueprint(ABC):
         Args:
             log_group: Log group to read from.
             limit: Maximum number of entries to return.
-            **kwargs: Provider-specific filters:
 
-                **Common (both providers):**
-                    - ``filter_pattern``: Filter/search string for log entries.
-
-                **AWS (CloudWatch Logs):**
-                    - ``start_time``: Start time in epoch milliseconds.
-                    - ``end_time``: End time in epoch milliseconds.
-
-                **GCP (Cloud Logging):**
-                    *(filter_pattern is appended to the Cloud Logging
-                    filter query)*
+        Keyword Args:
+            filter_pattern (str): Filter/search string for log
+                entries *(AWS, GCP)*.
+            start_time (int): Start time in epoch milliseconds *(AWS)*.
+            end_time (int): End time in epoch milliseconds *(AWS)*.
         """

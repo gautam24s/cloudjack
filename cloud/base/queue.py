@@ -22,15 +22,14 @@ class QueueBlueprint(ABC):
 
         Args:
             queue_name: Logical queue name.
-            **kwargs: Provider-specific creation options:
 
-                **AWS (SQS):**
-                    - ``delay_seconds``: Default delivery delay for messages.
-                    - ``visibility_timeout``: Default visibility timeout.
-
-                **GCP (Pub/Sub):**
-                    - ``ack_deadline_seconds``: Acknowledgement deadline
-                      (default 60).
+        Keyword Args:
+            delay_seconds (int): Default delivery delay
+                for messages *(AWS)*.
+            visibility_timeout (int): Default visibility
+                timeout *(AWS)*.
+            ack_deadline_seconds (int): Acknowledgement deadline,
+                default ``60`` *(GCP)*.
 
         Returns:
             Queue identifier (URL for SQS, subscription path for Pub/Sub).
@@ -53,17 +52,11 @@ class QueueBlueprint(ABC):
         Args:
             queue_id: Queue identifier.
             body: Message body (string).
-            **kwargs: Provider-specific options:
 
-                **Common (both providers):**
-                    - ``message_attributes``: Dict of message metadata
-                      attributes.
-
-                **AWS (SQS):**
-                    - ``delay_seconds``: Per-message delivery delay.
-
-                **GCP (Pub/Sub):**
-                    *(attributes are passed as Pub/Sub message attributes)*
+        Keyword Args:
+            message_attributes (dict): Dict of message metadata
+                attributes *(AWS, GCP)*.
+            delay_seconds (int): Per-message delivery delay *(AWS)*.
 
         Returns:
             Provider-assigned message ID.
@@ -83,14 +76,11 @@ class QueueBlueprint(ABC):
         Args:
             queue_id: Queue identifier.
             max_messages: Maximum number of messages to retrieve.
-            **kwargs: Provider-specific options:
 
-                **AWS (SQS):**
-                    - ``wait_time_seconds``: Long-poll wait time.
-                    - ``visibility_timeout``: Per-receive visibility timeout.
-
-                **GCP (Pub/Sub):**
-                    *(no additional kwargs at this time)*
+        Keyword Args:
+            wait_time_seconds (int): Long-poll wait time *(AWS)*.
+            visibility_timeout (int): Per-receive visibility
+                timeout *(AWS)*.
         """
 
     @abstractmethod

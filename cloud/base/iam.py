@@ -24,20 +24,15 @@ class IAMBlueprint(ABC):
         Args:
             role_name: Name of the role.
             trust_policy: Trust / assume-role policy document.
+                For **AWS**, this is a standard IAM assume-role policy JSON.
+                For **GCP**, this is a dict with ``title``, ``description``,
+                ``permissions`` (list of strings), and optional
+                ``stage`` (default ``GA``).
 
-                - **AWS**: Standard IAM assume-role policy JSON.
-                - **GCP**: Dict with ``title``, ``description``,
-                  ``permissions`` (list of strings), and optional
-                  ``stage`` (default ``GA``).
-
-            **kwargs: Provider-specific options:
-
-                **AWS (IAM):**
-                    - ``description``: Role description.
-                    - ``max_session_duration``: Max session duration in seconds.
-
-                **GCP (IAM Admin):**
-                    *(options encoded in trust_policy dict)*
+        Keyword Args:
+            description (str): Role description *(AWS)*.
+            max_session_duration (int): Max session duration
+                in seconds *(AWS)*.
 
         Returns:
             Role identifier (ARN for AWS, full name for GCP).
@@ -53,14 +48,9 @@ class IAMBlueprint(ABC):
 
         Each dict contains at least ``role_name`` and ``role_id``.
 
-        Args:
-            **kwargs: Provider-specific filters:
-
-                **AWS (IAM):**
-                    - ``path_prefix``: Filter roles by IAM path prefix.
-
-                **GCP (IAM Admin):**
-                    - ``parent``: Override the default project scope.
+        Keyword Args:
+            path_prefix (str): Filter roles by IAM path prefix *(AWS)*.
+            parent (str): Override the default project scope *(GCP)*.
         """
 
     # --- Policy management ---
@@ -72,21 +62,16 @@ class IAMBlueprint(ABC):
         Args:
             role_name: Target role.
             policy_identifier: Policy name or member to attach.
+                For **AWS**, pass a policy name (e.g. ``ReadOnlyAccess``
+                or ``MyCustomPolicy``). The full ARN is constructed
+                automatically. Pass ``managed=True`` for AWS-managed
+                policies. Full ARNs (``arn:aws:...``) are also accepted.
+                For **GCP**, pass a member string
+                (e.g. ``user:alice@example.com``).
 
-                - **AWS**: Policy name (e.g. ``ReadOnlyAccess`` or
-                  ``MyCustomPolicy``). The full ARN is constructed
-                  automatically. Pass ``managed=True`` for AWS-managed
-                  policies. Full ARNs (``arn:aws:...``) are also accepted.
-                - **GCP**: Member string (e.g. ``user:alice@example.com``).
-
-            **kwargs: Provider-specific options:
-
-                **AWS (IAM):**
-                    - ``managed``: If ``True``, treat as an AWS-managed
-                      policy (default ``False``).
-
-                **GCP (IAM Admin):**
-                    *(no additional kwargs)*
+        Keyword Args:
+            managed (bool): If ``True``, treat as an AWS-managed
+                policy, default ``False`` *(AWS)*.
         """
 
     @abstractmethod
@@ -96,20 +81,14 @@ class IAMBlueprint(ABC):
         Args:
             role_name: Target role.
             policy_identifier: Policy name or member to detach.
+                For **AWS**, pass a policy name. The full ARN is constructed
+                automatically. Pass ``managed=True`` for AWS-managed
+                policies. Full ARNs are also accepted.
+                For **GCP**, pass a member string.
 
-                - **AWS**: Policy name. The full ARN is constructed
-                  automatically. Pass ``managed=True`` for AWS-managed
-                  policies. Full ARNs are also accepted.
-                - **GCP**: Member string.
-
-            **kwargs: Provider-specific options:
-
-                **AWS (IAM):**
-                    - ``managed``: If ``True``, treat as an AWS-managed
-                      policy (default ``False``).
-
-                **GCP (IAM Admin):**
-                    *(no additional kwargs)*
+        Keyword Args:
+            managed (bool): If ``True``, treat as an AWS-managed
+                policy, default ``False`` *(AWS)*.
         """
 
     @abstractmethod
@@ -118,13 +97,7 @@ class IAMBlueprint(ABC):
 
         Each dict contains at least ``policy_name`` and ``policy_identifier``.
 
-        Args:
-            **kwargs: Provider-specific filters:
-
-                **AWS (IAM):**
-                    - ``scope``: Policy scope (default ``Local``).
-                    - ``path_prefix``: Filter by IAM path prefix.
-
-                **GCP (IAM Admin):**
-                    *(returns project-level IAM bindings, no additional kwargs)*
+        Keyword Args:
+            scope (str): Policy scope, default ``Local`` *(AWS)*.
+            path_prefix (str): Filter by IAM path prefix *(AWS)*.
         """

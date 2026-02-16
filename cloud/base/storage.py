@@ -115,17 +115,16 @@ class CloudStorageBlueprint(ABC):
             object_name: The object key/name.
             expiration: URL expiration time in seconds.
             method: HTTP method the URL will allow (GET, PUT, DELETE, etc.).
-            **kwargs: Additional keyword arguments for provider-specific options:
-                AWS (S3):
-                    - content_type: Content-Type for the request.
-                    - response_disposition: Content-Disposition header in response.
-                    - response_type: Content-Type header in response.
-                GCP (Cloud Storage):
-                    - content_type: Content-Type for the signed request.
-                    - response_disposition: Content-Disposition header in response.
-                    - response_type: Content-Type header in response.
-                    - version: Signing version ("v2" or "v4", default "v4").
-                    - scheme: URL scheme ("http" or "https", default "https").
+
+        Keyword Args:
+            content_type (str): Content-Type for the request *(AWS, GCP)*.
+            response_disposition (str): Content-Disposition header in
+                response *(AWS, GCP)*.
+            response_type (str): Content-Type header in response *(AWS, GCP)*.
+            version (str): Signing version — ``"v2"`` or ``"v4"``
+                *(GCP only, default ``"v4"``)*. 
+            scheme (str): URL scheme — ``"http"`` or ``"https"``
+                *(GCP only, default ``"https"``)*. 
 
         Returns:
             A pre-signed URL string.
