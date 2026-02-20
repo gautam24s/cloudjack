@@ -11,6 +11,7 @@ from .compute import ComputeBlueprint
 from .dns import DNSBlueprint
 from .iam import IAMBlueprint
 from .logging_service import LoggingBlueprint
+from .supported_services import existing_services, existing_cloud_providers
 
 
 __all__ = [
@@ -21,4 +22,6 @@ __all__ = [
     "DNSBlueprint",
     "IAMBlueprint",
     "LoggingBlueprint",
+    "existing_services",
+    "existing_cloud_providers",
 ]

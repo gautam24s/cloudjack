@@ -16,6 +16,8 @@ from cloud.base import (
     DNSBlueprint,
     IAMBlueprint,
     LoggingBlueprint,
+    existing_services,
+    existing_cloud_providers,
 )
 from cloud.base.config import validate_config
 from cloud.aws.factory import SERVICE_REGISTRY as AWS_SERVICES
@@ -31,48 +33,50 @@ _FACTORY_REGISTRY: dict[str, dict[str, type]] = {
 
 @overload
 def universal_factory(
-    service_name: Literal["secret_manager"], cloud_provider: str, config: dict
+    service_name: Literal["secret_manager"], cloud_provider: existing_cloud_providers, config: dict
 ) -> SecretManagerBlueprint: ...
 
 
 @overload
 def universal_factory(
-    service_name: Literal["storage"], cloud_provider: str, config: dict
+    service_name: Literal["storage"], cloud_provider: existing_cloud_providers, config: dict
 ) -> CloudStorageBlueprint: ...
 
 
 @overload
 def universal_factory(
-    service_name: Literal["queue"], cloud_provider: str, config: dict
+    service_name: Literal["queue"], cloud_provider: existing_cloud_providers, config: dict
 ) -> QueueBlueprint: ...
 
 
 @overload
 def universal_factory(
-    service_name: Literal["compute"], cloud_provider: str, config: dict
+    service_name: Literal["compute"], cloud_provider: existing_cloud_providers, config: dict
 ) -> ComputeBlueprint: ...
 
 
 @overload
 def universal_factory(
-    service_name: Literal["dns"], cloud_provider: str, config: dict
+    service_name: Literal["dns"], cloud_provider: existing_cloud_providers, config: dict
 ) -> DNSBlueprint: ...
 
 
 @overload
 def universal_factory(
-    service_name: Literal["iam"], cloud_provider: str, config: dict
+    service_name: Literal["iam"], cloud_provider: existing_cloud_providers, config: dict
 ) -> IAMBlueprint: ...
 
 
 @overload
 def universal_factory(
-    service_name: Literal["logging"], cloud_provider: str, config: dict
+    service_name: Literal["logging"], cloud_provider: existing_cloud_providers, config: dict
 ) -> LoggingBlueprint: ...
 
 
 def universal_factory(
-    service_name: str, cloud_provider: str, config: dict
+    service_name: existing_services,
+    cloud_provider: existing_cloud_providers,
+    config: dict,
 ) -> Any:
     """
     Universal factory function to create service instances based on cloud provider and service name.
@@ -87,12 +91,14 @@ def universal_factory(
     """
     if cloud_provider not in _FACTORY_REGISTRY:
         raise ValueError(f"Unsupported cloud provider: {cloud_provider}")
-    
+
     provider_services = _FACTORY_REGISTRY[cloud_provider]
-    
+
     if service_name not in provider_services:
-        raise ValueError(f"Unsupported service '{service_name}' for provider '{cloud_provider}'")
-    
+        raise ValueError(
+            f"Unsupported service '{service_name}' for provider '{cloud_provider}'"
+        )
+
     service_class = provider_services[service_name]
-    validate_config(cloud_provider, config)
-    return service_class(config)
+    configObj = validate_config(cloud_provider, config)
+    return service_class(configObj)
