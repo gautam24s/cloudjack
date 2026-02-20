@@ -5,6 +5,7 @@ import pytest
 from botocore.exceptions import ClientError
 
 from cloud.aws.dns import DNS
+from cloud.base.config import AWSConfig
 from cloud.base.exceptions import DNSError, ZoneNotFoundError, ZoneAlreadyExistsError
 
 
@@ -17,11 +18,11 @@ def svc():
     with patch("cloud.aws.dns.boto3") as mock_boto:
         mock_client = MagicMock()
         mock_boto.client.return_value = mock_client
-        instance = DNS({
-            "aws_access_key_id": "key",
-            "aws_secret_access_key": "secret",
-            "region_name": "us-east-1",
-        })
+        instance = DNS(AWSConfig(
+            aws_access_key_id="key",
+            aws_secret_access_key="secret",
+            region_name="us-east-1",
+        ))
         yield instance, mock_client
 
 

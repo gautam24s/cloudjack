@@ -5,6 +5,7 @@ import pytest
 from botocore.exceptions import ClientError
 
 from cloud.aws.compute import Compute
+from cloud.base.config import AWSConfig
 from cloud.base.exceptions import ComputeError, InstanceNotFoundError
 
 
@@ -17,11 +18,11 @@ def svc():
     with patch("cloud.aws.compute.boto3") as mock_boto:
         mock_client = MagicMock()
         mock_boto.client.return_value = mock_client
-        instance = Compute({
-            "aws_access_key_id": "key",
-            "aws_secret_access_key": "secret",
-            "region_name": "us-east-1",
-        })
+        instance = Compute(AWSConfig(
+            aws_access_key_id="key",
+            aws_secret_access_key="secret",
+            region_name="us-east-1",
+        ))
         yield instance, mock_client
 
 

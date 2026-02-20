@@ -3,6 +3,7 @@ import pytest
 from botocore.exceptions import ClientError
 
 from cloud.aws.secret_manager import SecretManager
+from cloud.base.config import AWSConfig
 from cloud.base.exceptions import (
     SecretManagerError,
     SecretAlreadyExistsError,
@@ -26,11 +27,11 @@ def sm():
 
         mock_boto.client.side_effect = pick_client
 
-        instance = SecretManager({
-            "aws_access_key_id": "key",
-            "aws_secret_access_key": "secret",
-            "region_name": "us-east-1",
-        })
+        instance = SecretManager(AWSConfig(
+            aws_access_key_id="key",
+            aws_secret_access_key="secret",
+            region_name="us-east-1",
+        ))
         yield instance, mock_sm_client
 
 

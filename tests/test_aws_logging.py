@@ -5,6 +5,7 @@ import pytest
 from botocore.exceptions import ClientError
 
 from cloud.aws.logging_service import Logging
+from cloud.base.config import AWSConfig
 from cloud.base.exceptions import (
     LoggingError,
     LogGroupNotFoundError,
@@ -21,11 +22,11 @@ def svc():
     with patch("cloud.aws.logging_service.boto3") as mock_boto:
         mock_client = MagicMock()
         mock_boto.client.return_value = mock_client
-        instance = Logging({
-            "aws_access_key_id": "key",
-            "aws_secret_access_key": "secret",
-            "region_name": "us-east-1",
-        })
+        instance = Logging(AWSConfig(
+            aws_access_key_id="key",
+            aws_secret_access_key="secret",
+            region_name="us-east-1",
+        ))
         yield instance, mock_client
 
 

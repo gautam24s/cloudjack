@@ -3,6 +3,7 @@ import pytest
 from botocore.exceptions import ClientError
 
 from cloud.aws.storage import Storage
+from cloud.base.config import AWSConfig
 from cloud.base.exceptions import (
     StorageError,
     BucketNotFoundError,
@@ -20,11 +21,11 @@ def storage():
     with patch("cloud.aws.storage.boto3") as mock_boto:
         mock_client = MagicMock()
         mock_boto.client.return_value = mock_client
-        instance = Storage({
-            "aws_access_key_id": "key",
-            "aws_secret_access_key": "secret",
-            "region_name": "ap-south-1",
-        })
+        instance = Storage(AWSConfig(
+            aws_access_key_id="key",
+            aws_secret_access_key="secret",
+            region_name="ap-south-1",
+        ))
         yield instance, mock_client
 
 

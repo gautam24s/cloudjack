@@ -5,6 +5,7 @@ import pytest
 from botocore.exceptions import ClientError
 
 from cloud.aws.iam import IAM
+from cloud.base.config import AWSConfig
 from cloud.base.exceptions import (
     IAMError,
     RoleNotFoundError,
@@ -39,11 +40,11 @@ def svc():
             return {"iam": mock_iam_client, "sts": mock_sts_client}[service]
 
         mock_boto.client.side_effect = pick_client
-        instance = IAM({
-            "aws_access_key_id": "key",
-            "aws_secret_access_key": "secret",
-            "region_name": "us-east-1",
-        })
+        instance = IAM(AWSConfig(
+            aws_access_key_id="key",
+            aws_secret_access_key="secret",
+            region_name="us-east-1",
+        ))
         yield instance, mock_iam_client
 
 
