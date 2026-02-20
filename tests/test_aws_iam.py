@@ -99,23 +99,29 @@ class TestDeleteRole:
 class TestListRoles:
     def test_success(self, svc):
         inst, client = svc
-        client.list_roles.return_value = {
-            "Roles": [
-                {
-                    "RoleName": "admin",
-                    "RoleId": "AROA123",
-                    "Arn": "arn:aws:iam::123:role/admin",
-                    "CreateDate": "2024-01-01",
-                }
-            ]
-        }
+        paginator = MagicMock()
+        client.get_paginator.return_value = paginator
+        paginator.paginate.return_value = [
+            {
+                "Roles": [
+                    {
+                        "RoleName": "admin",
+                        "RoleId": "AROA123",
+                        "Arn": "arn:aws:iam::123:role/admin",
+                        "CreateDate": "2024-01-01",
+                    }
+                ]
+            }
+        ]
         roles = inst.list_roles()
         assert len(roles) == 1
         assert roles[0]["role_name"] == "admin"
 
     def test_empty(self, svc):
         inst, client = svc
-        client.list_roles.return_value = {"Roles": []}
+        paginator = MagicMock()
+        client.get_paginator.return_value = paginator
+        paginator.paginate.return_value = [{"Roles": []}]
         assert inst.list_roles() == []
 
 
@@ -177,20 +183,26 @@ class TestDetachPolicy:
 class TestListPolicies:
     def test_success(self, svc):
         inst, client = svc
-        client.list_policies.return_value = {
-            "Policies": [
-                {
-                    "PolicyName": "MyPolicy",
-                    "Arn": "arn:aws:iam::123:policy/MyPolicy",
-                    "CreateDate": "2024-01-01",
-                }
-            ]
-        }
+        paginator = MagicMock()
+        client.get_paginator.return_value = paginator
+        paginator.paginate.return_value = [
+            {
+                "Policies": [
+                    {
+                        "PolicyName": "MyPolicy",
+                        "Arn": "arn:aws:iam::123:policy/MyPolicy",
+                        "CreateDate": "2024-01-01",
+                    }
+                ]
+            }
+        ]
         policies = inst.list_policies()
         assert len(policies) == 1
         assert policies[0]["policy_name"] == "MyPolicy"
 
     def test_empty(self, svc):
         inst, client = svc
-        client.list_policies.return_value = {"Policies": []}
+        paginator = MagicMock()
+        client.get_paginator.return_value = paginator
+        paginator.paginate.return_value = [{"Policies": []}]
         assert inst.list_policies() == []

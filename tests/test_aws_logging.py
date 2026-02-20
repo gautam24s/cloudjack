@@ -79,24 +79,33 @@ class TestDeleteLogGroup:
 class TestListLogGroups:
     def test_success(self, svc):
         inst, client = svc
-        client.describe_log_groups.return_value = {
-            "logGroups": [
-                {"logGroupName": "/app/web"},
-                {"logGroupName": "/app/api"},
-            ]
-        }
+        paginator = MagicMock()
+        client.get_paginator.return_value = paginator
+        paginator.paginate.return_value = [
+            {
+                "logGroups": [
+                    {"logGroupName": "/app/web"},
+                    {"logGroupName": "/app/api"},
+                ]
+            }
+        ]
         groups = inst.list_log_groups()
         assert groups == ["/app/web", "/app/api"]
 
     def test_with_prefix(self, svc):
         inst, client = svc
-        client.describe_log_groups.return_value = {"logGroups": [{"logGroupName": "/app/web"}]}
+        paginator = MagicMock()
+        client.get_paginator.return_value = paginator
+        paginator.paginate.return_value = [{"logGroups": [{"logGroupName": "/app/web"}]}]
         inst.list_log_groups(prefix="/app")
-        client.describe_log_groups.assert_called_once_with(logGroupNamePrefix="/app")
+        client.get_paginator.assert_called_once_with("describe_log_groups")
+        paginator.paginate.assert_called_once_with(logGroupNamePrefix="/app")
 
     def test_empty(self, svc):
         inst, client = svc
-        client.describe_log_groups.return_value = {"logGroups": []}
+        paginator = MagicMock()
+        client.get_paginator.return_value = paginator
+        paginator.paginate.return_value = [{"logGroups": []}]
         assert inst.list_log_groups() == []
 
 
@@ -145,7 +154,8 @@ class TestReadLogs:
         }
         logs = inst.read_logs("/app/logs")
         assert len(logs) == 1
-        assert logs[0]["message"] == "[INFO] Hi"
+        assert logs[0]["message"] == "Hi"
+        assert logs[0]["severity"] == "INFO"
 
     def test_with_filter(self, svc):
         inst, client = svc

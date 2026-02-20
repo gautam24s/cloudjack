@@ -70,16 +70,20 @@ class TestDeleteZone:
 class TestListZones:
     def test_success(self, svc):
         inst, client = svc
-        client.list_hosted_zones.return_value = {
-            "HostedZones": [
-                {
-                    "Id": "/hostedzone/Z1",
-                    "Name": "example.com.",
-                    "ResourceRecordSetCount": 5,
-                    "Config": {"PrivateZone": False},
-                }
-            ]
-        }
+        paginator = MagicMock()
+        client.get_paginator.return_value = paginator
+        paginator.paginate.return_value = [
+            {
+                "HostedZones": [
+                    {
+                        "Id": "/hostedzone/Z1",
+                        "Name": "example.com.",
+                        "ResourceRecordSetCount": 5,
+                        "Config": {"PrivateZone": False},
+                    }
+                ]
+            }
+        ]
         zones = inst.list_zones()
         assert len(zones) == 1
         assert zones[0]["zone_id"] == "Z1"
@@ -87,7 +91,9 @@ class TestListZones:
 
     def test_empty(self, svc):
         inst, client = svc
-        client.list_hosted_zones.return_value = {"HostedZones": []}
+        paginator = MagicMock()
+        client.get_paginator.return_value = paginator
+        paginator.paginate.return_value = [{"HostedZones": []}]
         assert inst.list_zones() == []
 
 
