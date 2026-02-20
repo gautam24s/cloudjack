@@ -11,6 +11,7 @@ from cloud.base.exceptions import (
     ObjectNotFoundError,
 )
 from cloud.base import CloudStorageBlueprint
+from cloud.base.config import AWSConfig
 
 _ERROR_MAP = {
     "NoSuchBucket": BucketNotFoundError,
@@ -37,23 +38,23 @@ class Storage(CloudStorageBlueprint):
         region: AWS region name.
     """
 
-    def __init__(self, config: dict):
+    def __init__(self, config: AWSConfig) -> None:
         """Initialize the AWS S3 client.
 
         Args:
-            config: Configuration dictionary containing AWS credentials and region.
-                   Expected keys:
+            config: AWS configuration object containing credentials and region.
+                   Expected attributes:
                    - aws_access_key_id: AWS access key ID
                    - aws_secret_access_key: AWS secret access key
                    - region_name: AWS region name (e.g., 'us-east-1')
         """
         self.client = boto3.client(
             "s3",
-            aws_access_key_id=config.get("aws_access_key_id"),
-            aws_secret_access_key=config.get("aws_secret_access_key"),
-            region_name=config.get("region_name"),
+            aws_access_key_id=config.aws_access_key_id,
+            aws_secret_access_key=config.aws_secret_access_key,
+            region_name=config.region_name,
         )
-        self.region = config.get("region_name")
+        self.region = config.region_name
 
     # --- Bucket operations ---
 

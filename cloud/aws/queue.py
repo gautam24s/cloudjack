@@ -14,6 +14,7 @@ from cloud.base.exceptions import (
     QueueAlreadyExistsError,
     MessageError,
 )
+from cloud.base.config import AWSConfig
 
 _ERROR_MAP: dict[str, type[QueueError]] = {
     "AWS.SimpleQueueService.NonExistentQueue": QueueNotFoundError,
@@ -35,18 +36,21 @@ class Queue(QueueBlueprint):
         client: boto3 SQS client.
     """
 
-    def __init__(self, config: dict[str, Any]) -> None:
+    def __init__(self, config: AWSConfig) -> None:
         """Initialize the SQS client.
 
         Args:
-            config: AWS credentials dict (``aws_access_key_id``,
-                ``aws_secret_access_key``, ``region_name``).
+            config: AWS configuration object containing credentials and region.
+                   Expected attributes:
+                   - aws_access_key_id: AWS access key ID
+                   - aws_secret_access_key: AWS secret access key
+                   - region_name: AWS region name (e.g., 'us-east-1')
         """
         self.client = boto3.client(
             "sqs",
-            aws_access_key_id=config.get("aws_access_key_id"),
-            aws_secret_access_key=config.get("aws_secret_access_key"),
-            region_name=config.get("region_name"),
+            aws_access_key_id=config.aws_access_key_id,
+            aws_secret_access_key=config.aws_secret_access_key,
+            region_name=config.region_name,
         )
 
     # --- Queue lifecycle ---

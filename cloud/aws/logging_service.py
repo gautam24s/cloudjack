@@ -14,6 +14,7 @@ from cloud.base.exceptions import (
     LogGroupNotFoundError,
     LogGroupAlreadyExistsError,
 )
+from cloud.base.config import AWSConfig
 
 _ERROR_MAP: dict[str, type[LoggingError]] = {
     "ResourceNotFoundException": LogGroupNotFoundError,
@@ -36,18 +37,21 @@ class Logging(LoggingBlueprint):
         client: boto3 CloudWatch Logs client.
     """
 
-    def __init__(self, config: dict[str, Any]) -> None:
+    def __init__(self, config: AWSConfig) -> None:
         """Initialize the CloudWatch Logs client.
 
         Args:
-            config: AWS credentials dict (``aws_access_key_id``,
-                ``aws_secret_access_key``, ``region_name``).
+            config: AWS configuration object containing credentials and region.
+                   Expected attributes:
+                   - aws_access_key_id: AWS access key ID
+                   - aws_secret_access_key: AWS secret access key
+                   - region_name: AWS region name (e.g., 'us-east-1')
         """
         self.client = boto3.client(
             "logs",
-            aws_access_key_id=config.get("aws_access_key_id"),
-            aws_secret_access_key=config.get("aws_secret_access_key"),
-            region_name=config.get("region_name"),
+            aws_access_key_id=config.aws_access_key_id,
+            aws_secret_access_key=config.aws_secret_access_key,
+            region_name=config.region_name,
         )
 
     # --- Log group lifecycle ---
