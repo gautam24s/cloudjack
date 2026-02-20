@@ -6,6 +6,7 @@ import pytest
 from google.api_core import exceptions as gcp_exceptions
 
 from cloud.gcp.queue import Queue
+from cloud.base.config import GCPConfig
 from cloud.base.exceptions import (
     QueueError,
     QueueNotFoundError,
@@ -24,7 +25,7 @@ def svc():
         mock_sub = MockSub.return_value
         mock_pub.topic_path.side_effect = lambda p, t: f"projects/{p}/topics/{t}"
         mock_sub.subscription_path.side_effect = lambda p, s: f"projects/{p}/subscriptions/{s}"
-        instance = Queue({"project_id": "my-project"})
+        instance = Queue(GCPConfig(project_id="my-project"))
         yield instance, mock_pub, mock_sub
 
 

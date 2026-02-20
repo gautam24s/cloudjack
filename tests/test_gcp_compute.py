@@ -6,6 +6,7 @@ import pytest
 from google.api_core import exceptions as gcp_exceptions
 
 from cloud.gcp.compute import Compute
+from cloud.base.config import GCPConfig
 from cloud.base.exceptions import (
     ComputeError,
     InstanceNotFoundError,
@@ -21,7 +22,7 @@ def svc():
     ):
         mock_instances = MockInstances.return_value
         mock_ops = MockOps.return_value
-        instance = Compute({"project_id": "my-project", "zone": "us-central1-a"})
+        instance = Compute(GCPConfig(project_id="my-project"))
         yield instance, mock_instances, mock_ops
 
 

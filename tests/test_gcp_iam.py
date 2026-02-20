@@ -6,6 +6,7 @@ import pytest
 from google.api_core import exceptions as gcp_exceptions
 
 from cloud.gcp.iam import IAM
+from cloud.base.config import GCPConfig
 from cloud.base.exceptions import (
     IAMError,
     RoleNotFoundError,
@@ -25,7 +26,7 @@ TRUST_POLICY = {
 def svc():
     with patch("cloud.gcp.iam.iam_admin_v1.IAMClient") as MockClient:
         mock_client = MockClient.return_value
-        instance = IAM({"project_id": "my-project"})
+        instance = IAM(GCPConfig(project_id="my-project"))
         yield instance, mock_client
 
 

@@ -6,6 +6,7 @@ import pytest
 from google.api_core import exceptions as gcp_exceptions
 
 from cloud.gcp.logging_service import Logging
+from cloud.base.config import GCPConfig
 from cloud.base.exceptions import (
     LoggingError,
     LogGroupNotFoundError,
@@ -17,7 +18,7 @@ from cloud.base.exceptions import (
 def svc():
     with patch("cloud.gcp.logging_service.cloud_logging.Client") as MockClient:
         mock_client = MockClient.return_value
-        instance = Logging({"project_id": "my-project"})
+        instance = Logging(GCPConfig(project_id="my-project"))
         yield instance, mock_client
 
 

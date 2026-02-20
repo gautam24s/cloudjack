@@ -5,6 +5,7 @@ from google.api_core.exceptions import NotFound, Conflict
 from google.cloud.exceptions import GoogleCloudError
 
 from cloud.gcp.storage import Storage
+from cloud.base.config import GCPConfig
 from cloud.base.exceptions import (
     StorageError,
     BucketNotFoundError,
@@ -18,7 +19,7 @@ def storage():
     with patch("cloud.gcp.storage.gcs") as mock_gcs:
         mock_client = MagicMock()
         mock_gcs.Client.return_value = mock_client
-        instance = Storage({"project_id": "my-project"})
+        instance = Storage(GCPConfig(project_id="my-project"))
         yield instance, mock_client
 
 
