@@ -38,6 +38,7 @@ class IAM(IAMBlueprint):
                    - credentials: Optional GCP credentials object
                    - credentials_path: Optional path to service account JSON key file
         """
+        assert config.project_id is not None  # guaranteed by GCPConfig validator
         self.project_id: str = config.project_id
         self.client = iam_admin_v1.IAMClient(credentials=config.credentials)
 

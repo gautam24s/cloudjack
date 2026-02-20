@@ -37,6 +37,7 @@ class Logging(LoggingBlueprint):
                    - credentials: Optional GCP credentials object
                    - credentials_path: Optional path to service account JSON key file
         """
+        assert config.project_id is not None  # guaranteed by GCPConfig validator
         self.project_id: str = config.project_id
         self.client = cloud_logging.Client(project=self.project_id, credentials=config.credentials)
 

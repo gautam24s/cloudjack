@@ -40,6 +40,7 @@ class Queue(QueueBlueprint):
                    - credentials: Optional GCP credentials object
                    - credentials_path: Optional path to service account JSON key file
         """
+        assert config.project_id is not None  # guaranteed by GCPConfig validator
         self.project_id: str = config.project_id
         self.publisher = pubsub_v1.PublisherClient(credentials=config.credentials)
         self.subscriber = pubsub_v1.SubscriberClient(credentials=config.credentials)
