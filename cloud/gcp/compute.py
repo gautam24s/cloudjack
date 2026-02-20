@@ -9,7 +9,7 @@ from google.cloud import compute_v1
 
 from cloud.base.compute import ComputeBlueprint
 from cloud.base.config import GCPConfig
-from cloud.base.exceptions import ComputeError, InstanceNotFoundError
+from cloud.base.exceptions import ComputeError, InstanceNotFoundError, InstanceAlreadyExistsError
 
 
 class Compute(ComputeBlueprint):
@@ -33,8 +33,8 @@ class Compute(ComputeBlueprint):
         """
         self.project_id: str = config.project_id
         self.zone: str = "us-central1-a"
-        self.client = compute_v1.InstancesClient()
-        self._zone_ops = compute_v1.ZoneOperationsClient()
+        self.client = compute_v1.InstancesClient(credentials=config.credentials)
+        self._zone_ops = compute_v1.ZoneOperationsClient(credentials=config.credentials)
 
     def _wait(self, operation: Any) -> None:
         """Block until a zone operation completes."""
@@ -91,8 +91,6 @@ class Compute(ComputeBlueprint):
             self._wait(op)
             return name
         except gcp_exceptions.AlreadyExists as e:
-            from cloud.base.exceptions import InstanceAlreadyExistsError
-
             raise InstanceAlreadyExistsError(
                 f"Instance '{name}' already exists"
             ) from e

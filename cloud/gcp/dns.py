@@ -35,7 +35,7 @@ class DNS(DNSBlueprint):
                    - credentials_path: Optional path to service account JSON key file
         """
         self.project_id: str = config.project_id
-        self.client = cloud_dns.Client(project=self.project_id)
+        self.client = cloud_dns.Client(project=self.project_id, credentials=config.credentials)
 
     # --- Zone lifecycle ---
 

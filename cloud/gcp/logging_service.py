@@ -38,7 +38,7 @@ class Logging(LoggingBlueprint):
                    - credentials_path: Optional path to service account JSON key file
         """
         self.project_id: str = config.project_id
-        self.client = cloud_logging.Client(project=self.project_id)
+        self.client = cloud_logging.Client(project=self.project_id, credentials=config.credentials)
 
     # --- Log group lifecycle ---
 

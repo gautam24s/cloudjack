@@ -41,8 +41,8 @@ class Queue(QueueBlueprint):
                    - credentials_path: Optional path to service account JSON key file
         """
         self.project_id: str = config.project_id
-        self.publisher = pubsub_v1.PublisherClient()
-        self.subscriber = pubsub_v1.SubscriberClient()
+        self.publisher = pubsub_v1.PublisherClient(credentials=config.credentials)
+        self.subscriber = pubsub_v1.SubscriberClient(credentials=config.credentials)
 
     def _topic_path(self, name: str) -> str:
         """Build the fully-qualified topic path."""
