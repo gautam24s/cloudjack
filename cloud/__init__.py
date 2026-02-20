@@ -8,7 +8,24 @@ any service client with a single call::
     storage = universal_factory("storage", "aws", {"region_name": "us-east-1"})
 """
 
-from .base import SecretManagerBlueprint
+from .base import (
+    SecretManagerBlueprint,
+    CloudStorageBlueprint,
+    QueueBlueprint,
+    ComputeBlueprint,
+    DNSBlueprint,
+    IAMBlueprint,
+    LoggingBlueprint,
+)
 from .factory import universal_factory
 
-__all__ = ["SecretManagerBlueprint", "universal_factory"]
+__all__ = [
+    "SecretManagerBlueprint",
+    "CloudStorageBlueprint",
+    "QueueBlueprint",
+    "ComputeBlueprint",
+    "DNSBlueprint",
+    "IAMBlueprint",
+    "LoggingBlueprint",
+    "universal_factory",
+]
