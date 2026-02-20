@@ -9,6 +9,7 @@ from google.cloud import pubsub_v1  # type: ignore[attr-defined]
 from google.pubsub_v1.types import PubsubMessage
 
 from cloud.base.queue import QueueBlueprint
+from cloud.base.config import GCPConfig
 from cloud.base.exceptions import (
     QueueError,
     QueueNotFoundError,
@@ -29,13 +30,17 @@ class Queue(QueueBlueprint):
         project_id: GCP project ID.
     """
 
-    def __init__(self, config: dict[str, Any]) -> None:
+    def __init__(self, config: GCPConfig) -> None:
         """Initialize Pub/Sub publisher and subscriber clients.
 
         Args:
-            config: Dict with ``project_id`` (required).
+            config: GCP configuration object containing project ID and credentials.
+                   Expected attributes:
+                   - project_id: GCP project ID
+                   - credentials: Optional GCP credentials object
+                   - credentials_path: Optional path to service account JSON key file
         """
-        self.project_id: str = config["project_id"]
+        self.project_id: str = config.project_id
         self.publisher = pubsub_v1.PublisherClient()
         self.subscriber = pubsub_v1.SubscriberClient()
 

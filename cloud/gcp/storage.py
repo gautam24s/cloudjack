@@ -13,6 +13,7 @@ from cloud.base.exceptions import (
     ObjectNotFoundError,
 )
 from cloud.base import CloudStorageBlueprint
+from cloud.base.config import GCPConfig
 
 
 def _handle_error(e: Exception, message: str) -> NoReturn:
@@ -29,15 +30,19 @@ def _handle_error(e: Exception, message: str) -> NoReturn:
 class Storage(CloudStorageBlueprint):
     """GCP Cloud Storage implementation for cloud storage CRUD operations."""
 
-    def __init__(self, config: dict):
+    def __init__(self, config: GCPConfig) -> None:
         """Initialize the GCP Cloud Storage client.
 
         Args:
-            config: Dict with project_id and optional credentials.
+            config: GCP configuration object containing project ID and credentials.
+                   Expected attributes:
+                   - project_id: GCP project ID
+                   - credentials: Optional GCP credentials object
+                   - credentials_path: Optional path to service account JSON key file
         """
         self.client = gcs.Client(
-            project=config.get("project_id"),
-            credentials=config.get("credentials"),
+            project=config.project_id,
+            credentials=config.credentials,
         )
 
     def create_bucket(self, bucket_name: str) -> None:

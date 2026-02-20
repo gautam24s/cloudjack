@@ -8,6 +8,7 @@ from google.api_core import exceptions as gcp_exceptions
 from google.cloud import logging as cloud_logging
 
 from cloud.base.logging_service import LoggingBlueprint
+from cloud.base.config import GCPConfig
 from cloud.base.exceptions import (
     LoggingError,
     LogGroupNotFoundError,
@@ -26,13 +27,17 @@ class Logging(LoggingBlueprint):
         project_id: GCP project ID.
     """
 
-    def __init__(self, config: dict[str, Any]) -> None:
+    def __init__(self, config: GCPConfig) -> None:
         """Initialize the Cloud Logging client.
 
         Args:
-            config: Dict with ``project_id`` (required).
+            config: GCP configuration object containing project ID and credentials.
+                   Expected attributes:
+                   - project_id: GCP project ID
+                   - credentials: Optional GCP credentials object
+                   - credentials_path: Optional path to service account JSON key file
         """
-        self.project_id: str = config["project_id"]
+        self.project_id: str = config.project_id
         self.client = cloud_logging.Client(project=self.project_id)
 
     # --- Log group lifecycle ---

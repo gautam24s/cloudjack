@@ -8,6 +8,7 @@ from google.api_core import exceptions as gcp_exceptions
 from google.cloud import dns as cloud_dns  # type: ignore[attr-defined]
 
 from cloud.base.dns import DNSBlueprint
+from cloud.base.config import GCPConfig
 from cloud.base.exceptions import (
     DNSError,
     ZoneNotFoundError,
@@ -23,13 +24,17 @@ class DNS(DNSBlueprint):
         project_id: GCP project ID.
     """
 
-    def __init__(self, config: dict[str, Any]) -> None:
+    def __init__(self, config: GCPConfig) -> None:
         """Initialize the Cloud DNS client.
 
         Args:
-            config: Dict with ``project_id`` (required).
+            config: GCP configuration object containing project ID and credentials.
+                   Expected attributes:
+                   - project_id: GCP project ID
+                   - credentials: Optional GCP credentials object
+                   - credentials_path: Optional path to service account JSON key file
         """
-        self.project_id: str = config["project_id"]
+        self.project_id: str = config.project_id
         self.client = cloud_dns.Client(project=self.project_id)
 
     # --- Zone lifecycle ---

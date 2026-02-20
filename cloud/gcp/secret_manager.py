@@ -10,6 +10,7 @@ from cloud.base.exceptions import (
 )
 
 from cloud.base import SecretManagerBlueprint
+from cloud.base.config import GCPConfig
 
 
 class SecretManager(SecretManagerBlueprint):
@@ -23,19 +24,20 @@ class SecretManager(SecretManagerBlueprint):
         project_id: The GCP project ID where secrets are stored.
     """
 
-    def __init__(self, config: dict):
+    def __init__(self, config: GCPConfig) -> None:
         """Initialize the GCP Secret Manager client.
 
         Args:
-            config: Configuration dictionary containing GCP credentials and project ID.
-                   Expected keys:
+            config: GCP configuration object containing project ID and credentials.
+                   Expected attributes:
                    - project_id: GCP project ID where secrets are stored
-                   - credentials: Optional Google Cloud credentials object (if not using default credentials)
+                   - credentials: Optional GCP credentials object
+                   - credentials_path: Optional path to service account JSON key file
         """
         self.client = secretmanager_v1.SecretManagerServiceClient(
-            credentials=config.get("credentials")
+            credentials=config.credentials
         )
-        self.project_id = config.get("project_id")
+        self.project_id = config.project_id
 
     def get_secret(self, name: str) -> str:
         """Retrieve a secret value from GCP Secret Manager.

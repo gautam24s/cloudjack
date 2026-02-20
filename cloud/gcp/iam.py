@@ -9,6 +9,7 @@ from google.cloud import iam_admin_v1
 from google.iam.v1 import iam_policy_pb2  # noqa: F401 — used by the client
 
 from cloud.base.iam import IAMBlueprint
+from cloud.base.config import GCPConfig
 from cloud.base.exceptions import (
     IAMError,
     RoleNotFoundError,
@@ -27,13 +28,17 @@ class IAM(IAMBlueprint):
         client: IAM Admin client.
     """
 
-    def __init__(self, config: dict[str, Any]) -> None:
+    def __init__(self, config: GCPConfig) -> None:
         """Initialize the IAM Admin client.
 
         Args:
-            config: Dict with ``project_id`` (required).
+            config: GCP configuration object containing project ID and credentials.
+                   Expected attributes:
+                   - project_id: GCP project ID
+                   - credentials: Optional GCP credentials object
+                   - credentials_path: Optional path to service account JSON key file
         """
-        self.project_id: str = config["project_id"]
+        self.project_id: str = config.project_id
         self.client = iam_admin_v1.IAMClient()
 
     # --- Role management ---

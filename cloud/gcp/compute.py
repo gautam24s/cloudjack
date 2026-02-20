@@ -8,6 +8,7 @@ from google.api_core import exceptions as gcp_exceptions
 from google.cloud import compute_v1
 
 from cloud.base.compute import ComputeBlueprint
+from cloud.base.config import GCPConfig
 from cloud.base.exceptions import ComputeError, InstanceNotFoundError
 
 
@@ -20,15 +21,18 @@ class Compute(ComputeBlueprint):
         client: Compute Engine instances client.
     """
 
-    def __init__(self, config: dict[str, Any]) -> None:
+    def __init__(self, config: GCPConfig) -> None:
         """Initialize the Compute Engine client.
 
         Args:
-            config: Dict with ``project_id`` (required) and
-                optional ``zone`` (default ``us-central1-a``).
+            config: GCP configuration object containing project ID and credentials.
+                   Expected attributes:
+                   - project_id: GCP project ID
+                   - credentials: Optional GCP credentials object
+                   - credentials_path: Optional path to service account JSON key file
         """
-        self.project_id: str = config["project_id"]
-        self.zone: str = config.get("zone", "us-central1-a")
+        self.project_id: str = config.project_id
+        self.zone: str = "us-central1-a"
         self.client = compute_v1.InstancesClient()
         self._zone_ops = compute_v1.ZoneOperationsClient()
 
