@@ -19,7 +19,6 @@ class SecretManagerBlueprint(ABC):
         Returns:
             The secret value as a string.
         """
-        pass
 
     @abstractmethod
     def create_secret(self, name: str, value: str) -> None:
@@ -29,7 +28,6 @@ class SecretManagerBlueprint(ABC):
             name: Secret name.
             value: Secret value.
         """
-        pass
 
     @abstractmethod
     def update_secret(self, name: str, value: str) -> None:
@@ -39,7 +37,6 @@ class SecretManagerBlueprint(ABC):
             name: Secret name.
             value: New secret value.
         """
-        pass
 
     @abstractmethod
     def delete_secret(self, name: str) -> None:
@@ -48,4 +45,3 @@ class SecretManagerBlueprint(ABC):
         Args:
             name: Secret name.
         """
-        pass

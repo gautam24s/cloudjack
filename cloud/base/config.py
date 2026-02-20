@@ -8,8 +8,9 @@ silently passing bad values to SDK clients.
 from __future__ import annotations
 
 import os
+from pathlib import Path
 from typing import Any
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class AWSConfig(BaseModel):
@@ -21,6 +22,8 @@ class AWSConfig(BaseModel):
     3. If neither is set, fields are left as None so boto3 can fall back to its
        own credential chain (instance metadata, ~/.aws/credentials, etc.).
     """
+
+    model_config = ConfigDict(extra="forbid")
 
     aws_access_key_id: str | None = Field(default=None, description="AWS access key ID")
     aws_secret_access_key: str | None = Field(default=None, description="AWS secret access key")
@@ -51,6 +54,8 @@ class GCPConfig(BaseModel):
        to Application Default Credentials (ADC).
     """
 
+    model_config = ConfigDict(extra="forbid")
+
     project_id: str | None = Field(default=None, description="GCP project ID")
     credentials: Any | None = Field(default=None, description="GCP credentials object")
     credentials_path: str | None = Field(
@@ -68,6 +73,25 @@ class GCPConfig(BaseModel):
         if not values.get("credentials_path"):
             values["credentials_path"] = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
         return values
+
+    @model_validator(mode="after")
+    def validate_project_and_credentials(self) -> GCPConfig:
+        """Ensure project_id is set and load credentials from path if needed."""
+        if self.project_id is None:
+            raise ValueError(
+                "GCP project_id is required. Set it explicitly or via "
+                "GOOGLE_CLOUD_PROJECT / GCLOUD_PROJECT environment variable."
+            )
+        if self.credentials is None and self.credentials_path:
+            path = Path(self.credentials_path)
+            if not path.exists():
+                raise ValueError(f"Credentials file not found: {self.credentials_path}")
+            from google.oauth2 import service_account  # lazy import
+
+            self.credentials = service_account.Credentials.from_service_account_file(
+                str(path)
+            )
+        return self
 
 
 # Map provider names to their config models for dynamic validation
@@ -95,3 +119,11 @@ def validate_config(cloud_provider: str, config: dict) -> BaseModel:
     if model is None:
         raise ValueError(f"No config model registered for provider: {cloud_provider}")
     return model(**config)
+
+
+__all__ = [
+    "AWSConfig",
+    "GCPConfig",
+    "CONFIG_REGISTRY",
+    "validate_config",
+]

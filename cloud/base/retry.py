@@ -49,12 +49,10 @@ def retry(
         @wraps(fn)
         def wrapper(*args: Any, **kwargs: Any) -> Any:
             delay = base_delay
-            last_exc: BaseException | None = None
             for attempt in range(1, max_attempts + 1):
                 try:
                     return fn(*args, **kwargs)
                 except retryable_exceptions as exc:
-                    last_exc = exc
                     if attempt == max_attempts:
                         logger.error(
                             "All %d attempts failed for %s: %s",
@@ -73,7 +71,9 @@ def retry(
                     )
                     time.sleep(delay)
                     delay = min(delay * backoff_factor, max_delay)
-            raise last_exc  # type: ignore[misc]
+            # This point should be unreachable because the last attempt
+            # either returns or re-raises inside the except block above.
+            raise RuntimeError("Retry loop exited unexpectedly")  # pragma: no cover
 
         return wrapper
 

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import threading
 from typing import Any
 
 
@@ -17,11 +18,13 @@ class ClientCache:
 
     _instance: ClientCache | None = None
     _cache: dict[str, Any]
+    _lock: threading.Lock
 
     def __new__(cls) -> ClientCache:
         if cls._instance is None:
             cls._instance = super().__new__(cls)
             cls._instance._cache = {}
+            cls._instance._lock = threading.Lock()
         return cls._instance
 
     @staticmethod
@@ -54,10 +57,12 @@ class ClientCache:
             The cached (or newly-created) service instance.
         """
         key = self._make_key(cloud_provider, service_name, config)
-        if key not in self._cache:
-            self._cache[key] = factory(config)
-        return self._cache[key]
+        with self._lock:
+            if key not in self._cache:
+                self._cache[key] = factory(config)
+            return self._cache[key]
 
     def clear(self) -> None:
         """Flush all cached service instances."""
-        self._cache.clear()
+        with self._lock:
+            self._cache.clear()

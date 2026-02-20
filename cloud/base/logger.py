@@ -35,15 +35,23 @@ class StructuredFormatter(logging.Formatter):
 
 
 class CloudjackLogger:
-    """Convenience wrapper around :mod:`logging` for Cloudjack operations."""
+    """Convenience wrapper around :mod:`logging` for Cloudjack operations.
+
+    Uses the standard :mod:`logging` module internally.  Multiple instances
+    with the same *name* share the same underlying :class:`logging.Logger`,
+    so a handler is only attached on the **first** instantiation.
+    """
+
+    _initialised_loggers: set[str] = set()
 
     def __init__(self, name: str = "cloudjack") -> None:
         self.logger = logging.getLogger(name)
-        if not self.logger.handlers:
+        if name not in CloudjackLogger._initialised_loggers:
             handler = logging.StreamHandler()
             handler.setFormatter(StructuredFormatter())
             self.logger.addHandler(handler)
             self.logger.setLevel(logging.INFO)
+            CloudjackLogger._initialised_loggers.add(name)
 
     def log_operation(
         self,

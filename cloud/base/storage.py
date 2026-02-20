@@ -1,6 +1,7 @@
 """Cloud storage service blueprint."""
 
 from abc import ABC, abstractmethod
+from typing import Any
 
 
 class CloudStorageBlueprint(ABC):
@@ -106,7 +107,7 @@ class CloudStorageBlueprint(ABC):
         object_name: str,
         expiration: int,
         method: str = "GET",
-        **kwargs
+        **kwargs: Any,
     ) -> str:
         """Generate a pre-signed URL for accessing an object.
 
