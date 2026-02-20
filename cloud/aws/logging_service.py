@@ -110,8 +110,11 @@ class Logging(LoggingBlueprint):
             params: dict[str, Any] = {}
             if prefix:
                 params["logGroupNamePrefix"] = prefix
-            resp = self.client.describe_log_groups(**params)
-            return [g["logGroupName"] for g in resp.get("logGroups", [])]
+            groups: list[str] = []
+            paginator = self.client.get_paginator("describe_log_groups")
+            for page in paginator.paginate(**params):
+                groups.extend(g["logGroupName"] for g in page.get("logGroups", []))
+            return groups
         except ClientError as e:
             _handle(e, "Failed to list log groups")
 
@@ -199,14 +202,23 @@ class Logging(LoggingBlueprint):
             if "filter_pattern" in kwargs:
                 params["filterPattern"] = kwargs["filter_pattern"]
             resp = self.client.filter_log_events(**params)
-            return [
-                {
+            results: list[dict[str, Any]] = []
+            for e in resp.get("events", []):
+                raw_msg = e.get("message", "")
+                # Parse severity from "[SEVERITY] message" format written by write_log
+                severity = "INFO"
+                message = raw_msg
+                if raw_msg.startswith("["):
+                    bracket_end = raw_msg.find("]")
+                    if bracket_end > 1:
+                        severity = raw_msg[1:bracket_end]
+                        message = raw_msg[bracket_end + 1:].lstrip()
+                results.append({
                     "timestamp": e.get("timestamp", 0),
-                    "message": e.get("message", ""),
-                    "severity": "INFO",
+                    "message": message,
+                    "severity": severity,
                     "stream": e.get("logStreamName", ""),
-                }
-                for e in resp.get("events", [])
-            ]
+                })
+            return results
         except ClientError as e:
             _handle(e, f"Failed to read logs from '{log_group}'")

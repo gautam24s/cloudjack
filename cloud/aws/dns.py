@@ -97,16 +97,19 @@ class DNS(DNSBlueprint):
             DNSError: On Route 53 API failure.
         """
         try:
-            resp = self.client.list_hosted_zones()
-            return [
-                {
-                    "zone_id": z["Id"].split("/")[-1],
-                    "name": z["Name"],
-                    "record_count": z.get("ResourceRecordSetCount", 0),
-                    "private": z.get("Config", {}).get("PrivateZone", False),
-                }
-                for z in resp.get("HostedZones", [])
-            ]
+            zones: list[dict[str, Any]] = []
+            paginator = self.client.get_paginator("list_hosted_zones")
+            for page in paginator.paginate():
+                zones.extend(
+                    {
+                        "zone_id": z["Id"].split("/")[-1],
+                        "name": z["Name"],
+                        "record_count": z.get("ResourceRecordSetCount", 0),
+                        "private": z.get("Config", {}).get("PrivateZone", False),
+                    }
+                    for z in page.get("HostedZones", [])
+                )
+            return zones
         except ClientError as e:
             _handle(e, "Failed to list zones")
 

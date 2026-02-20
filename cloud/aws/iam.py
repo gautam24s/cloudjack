@@ -138,16 +138,19 @@ class IAM(IAMBlueprint):
             params: dict[str, Any] = {}
             if "path_prefix" in kwargs:
                 params["PathPrefix"] = kwargs["path_prefix"]
-            resp = self.client.list_roles(**params)
-            return [
-                {
-                    "role_name": r["RoleName"],
-                    "role_id": r["RoleId"],
-                    "arn": r["Arn"],
-                    "create_date": str(r.get("CreateDate", "")),
-                }
-                for r in resp.get("Roles", [])
-            ]
+            roles: list[dict[str, Any]] = []
+            paginator = self.client.get_paginator("list_roles")
+            for page in paginator.paginate(**params):
+                roles.extend(
+                    {
+                        "role_name": r["RoleName"],
+                        "role_id": r["RoleId"],
+                        "arn": r["Arn"],
+                        "create_date": str(r.get("CreateDate", "")),
+                    }
+                    for r in page.get("Roles", [])
+                )
+            return roles
         except ClientError as e:
             _handle(e, "Failed to list roles")
 
@@ -217,14 +220,17 @@ class IAM(IAMBlueprint):
             }
             if "path_prefix" in kwargs:
                 params["PathPrefix"] = kwargs["path_prefix"]
-            resp = self.client.list_policies(**params)
-            return [
-                {
-                    "policy_name": p["PolicyName"],
-                    "policy_identifier": p["Arn"],
-                    "create_date": str(p.get("CreateDate", "")),
-                }
-                for p in resp.get("Policies", [])
-            ]
+            policies: list[dict[str, Any]] = []
+            paginator = self.client.get_paginator("list_policies")
+            for page in paginator.paginate(**params):
+                policies.extend(
+                    {
+                        "policy_name": p["PolicyName"],
+                        "policy_identifier": p["Arn"],
+                        "create_date": str(p.get("CreateDate", "")),
+                    }
+                    for p in page.get("Policies", [])
+                )
+            return policies
         except ClientError as e:
             _handle(e, "Failed to list policies")
