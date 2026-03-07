@@ -1,15 +1,19 @@
 [project]
 name = "cloudjack"
-version = "0.1.0"
+version = "0.1.1"
 description = "A unified multi-cloud SDK for AWS and GCP services"
 readme = "README.md"
-requires-python = ">=3.14"
+requires-python = ">=3.10"
 license = {text = "MIT"}
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
     "Topic :: Software Development :: Libraries",
 ]
@@ -66,7 +70,7 @@ testpaths = ["tests"]
 addopts = "--tb=short -q"
 
 [tool.mypy]
-python_version = "3.14"
+python_version = "3.10"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = false
