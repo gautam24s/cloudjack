@@ -76,7 +76,7 @@ def universal_factory(
 def universal_factory(
     service_name: existing_services,
     cloud_provider: existing_cloud_providers,
-    config: dict,
+    config: dict | None = None,
 ) -> Any:
     """
     Universal factory function to create service instances based on cloud provider and service name.

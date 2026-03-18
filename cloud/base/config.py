@@ -26,8 +26,12 @@ class AWSConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     aws_access_key_id: str | None = Field(default=None, description="AWS access key ID")
-    aws_secret_access_key: str | None = Field(default=None, description="AWS secret access key")
-    region_name: str | None = Field(default=None, description="AWS region (e.g. 'us-east-1')")
+    aws_secret_access_key: str | None = Field(
+        default=None, description="AWS secret access key"
+    )
+    region_name: str | None = Field(
+        default=None, description="AWS region (e.g. 'us-east-1')"
+    )
 
     @model_validator(mode="before")
     @classmethod
@@ -67,11 +71,13 @@ class GCPConfig(BaseModel):
     def resolve_from_env(cls, values: dict[str, Any]) -> dict[str, Any]:
         """Fall back to environment variables for missing config."""
         if not values.get("project_id"):
-            values["project_id"] = os.environ.get("GOOGLE_CLOUD_PROJECT") or os.environ.get(
-                "GCLOUD_PROJECT"
-            )
+            values["project_id"] = os.environ.get(
+                "GOOGLE_CLOUD_PROJECT"
+            ) or os.environ.get("GCLOUD_PROJECT")
         if not values.get("credentials_path"):
-            values["credentials_path"] = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
+            values["credentials_path"] = os.environ.get(
+                "GOOGLE_APPLICATION_CREDENTIALS"
+            )
         return values
 
     @model_validator(mode="after")
@@ -101,7 +107,7 @@ CONFIG_REGISTRY: dict[str, type[BaseModel]] = {
 }
 
 
-def validate_config(cloud_provider: str, config: dict) -> BaseModel:
+def validate_config(cloud_provider: str, config: dict | None = None) -> BaseModel:
     """Validate and return a typed config model for the given provider.
 
     Args:
@@ -118,7 +124,7 @@ def validate_config(cloud_provider: str, config: dict) -> BaseModel:
     model = CONFIG_REGISTRY.get(cloud_provider)
     if model is None:
         raise ValueError(f"No config model registered for provider: {cloud_provider}")
-    return model(**config)
+    return model(**config) if config is not None else model()
 
 
 __all__ = [
