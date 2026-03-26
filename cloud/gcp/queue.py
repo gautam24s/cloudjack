@@ -6,7 +6,6 @@ from typing import Any
 
 from google.api_core import exceptions as gcp_exceptions
 from google.cloud import pubsub_v1  # type: ignore[attr-defined]
-from google.pubsub_v1.types import PubsubMessage
 
 from cloud.base.queue import QueueBlueprint
 from cloud.base.config import GCPConfig

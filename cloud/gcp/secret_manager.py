@@ -55,7 +55,7 @@ class SecretManager(SecretManagerBlueprint):
         secret_name = f"projects/{self.project_id}/secrets/{name}/versions/latest"
         try:
             response = self.client.access_secret_version(name=secret_name)
-            return response.payload.data.decode("UTF-8")
+            return str(response.payload.data.decode("UTF-8"))
         except NotFound:
             raise SecretNotFoundError(f"Secret '{name}' not found.")
         except Exception as e:

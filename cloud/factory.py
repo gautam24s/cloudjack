@@ -101,4 +101,12 @@ def universal_factory(
 
     service_class = provider_services[service_name]
     configObj = validate_config(cloud_provider, config)
-    return service_class(configObj)
+    
+    from cloud.base.client_cache import ClientCache
+    config_dict = configObj.model_dump() if hasattr(configObj, "model_dump") else (config or {})
+    return ClientCache().get_or_create(
+        cloud_provider,
+        service_name,
+        config_dict,
+        lambda _: service_class(configObj)
+    )

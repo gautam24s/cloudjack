@@ -78,7 +78,7 @@ class IAM(IAMBlueprint):
                     "role": role,
                 }
             )
-            return resp.name
+            return str(resp.name)
         except gcp_exceptions.AlreadyExists as e:
             raise RoleAlreadyExistsError(
                 f"Role '{role_name}' already exists"

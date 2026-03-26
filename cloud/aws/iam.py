@@ -13,7 +13,6 @@ from cloud.base.exceptions import (
     IAMError,
     RoleNotFoundError,
     RoleAlreadyExistsError,
-    PolicyNotFoundError,
 )
 from cloud.base.config import AWSConfig
 

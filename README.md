@@ -162,6 +162,21 @@ aws_storage.list_buckets()
 gcp_storage.list_buckets()
 ```
 
+## Codebase Review Findings
+
+During a recent codebase review, the following issues were identified and successfully resolved:
+
+### 1. Logical Bugs
+- **Client Caching ignored:** The `universal_factory` function was instantiating new service clients (e.g., `boto3.client` or GCP abstractions) on every call instead of utilizing the `ClientCache` singleton. This circumvented the intended connection pooling behavior. It has been fixed to properly cache and reuse clients based on the provider and configuration.
+
+### 2. Typing Issues
+- **Mypy Return Type Violations:** In `cloud/gcp/iam.py` and `cloud/gcp/secret_manager.py`, functions declared to return `str` were implicitly returning `Any` due to dynamic properties on the GCP response objects. These have been cast to strings to ensure type-safety.
+
+### 3. Syntax & Style Issues
+- **Unused Imports (Ruff/Flake8):** Several unused imports were found and removed across the Cloud directory (such as `PolicyNotFoundError` in AWS IAM and `PubsubMessage` in GCP Queue).
+
+*Note: Following extensive bisection on testing anomalies, it was confirmed that tests run stably both locally and in CI.*
+
 ## Project Structure
 
 ```
