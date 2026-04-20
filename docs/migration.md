@@ -27,7 +27,7 @@ buckets = [b["Name"] for b in s3.list_buckets()["Buckets"]]
 **After (Cloudjack):**
 
 ```python
-from cloud import universal_factory
+from cloudjack import universal_factory
 
 storage = universal_factory("storage", "aws", {
     "aws_access_key_id": "AKIA...",
@@ -58,7 +58,7 @@ buckets = [b.name for b in client.list_buckets()]
 **After (Cloudjack):**
 
 ```python
-from cloud import universal_factory
+from cloudjack import universal_factory
 
 storage = universal_factory("storage", "gcp", {"project_id": "my-project"})
 storage.create_bucket("my-bucket")
@@ -130,7 +130,7 @@ queue.send_message(url, "hello")
 Cloudjack provides provider-agnostic exceptions:
 
 ```python
-from cloud.base.exceptions import BucketNotFoundError, StorageError
+from cloudjack.base.exceptions import BucketNotFoundError, StorageError
 
 try:
     storage.delete_bucket("missing")
@@ -147,18 +147,50 @@ No need to catch `botocore.exceptions.ClientError` or
 
 ### Config Validation (Optional)
 
-Use Pydantic models for validated configuration:
+`universal_factory` accepts either a `dict` or a pre-built
+[`AWSConfig`][cloudjack.base.config.AWSConfig] /
+[`GCPConfig`][cloudjack.base.config.GCPConfig] instance. Dicts go through
+Pydantic validation; model instances pass through unchanged (after a
+provider-match check). Build the config once and reuse it across every
+service to keep a single cached client per provider.
 
 ```python
-from cloud.base.config import validate_config
+from cloudjack import AWSConfig, universal_factory
 
-config = validate_config("aws", {
-    "aws_access_key_id": "AKIA...",
-    "aws_secret_access_key": "...",
-    "region_name": "us-east-1",
-})
+cfg = AWSConfig(
+    aws_access_key_id="AKIA...",
+    aws_secret_access_key="...",
+    region_name="us-east-1",
+)
+
+storage = universal_factory("storage", "aws", cfg)
+queue   = universal_factory("queue",   "aws", cfg)
+sm      = universal_factory("secret_manager", "aws", cfg)
 ```
+
+Passing a `GCPConfig` with `cloud_provider="aws"` (or vice versa) raises
+`TypeError` at call time.
 
 Environment variables are used as fallbacks automatically
 (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_DEFAULT_REGION`,
-`GOOGLE_CLOUD_PROJECT`, `GOOGLE_APPLICATION_CREDENTIALS`).
+`GOOGLE_CLOUD_PROJECT`, `GOOGLE_APPLICATION_CREDENTIALS`), and anything
+still missing delegates to the provider SDK's credential chain.
+
+---
+
+## Upgrading from 0.2.x → 0.3.0
+
+- The seven service interface ABCs are renamed from `*Blueprint` to
+  `*Service` — e.g. `CloudStorageBlueprint` → `StorageService`. Users
+  going through `universal_factory` don't need to change anything;
+  direct importers of `cloudjack.base.*Blueprint` must rename.
+- `universal_factory` now accepts `AWSConfig` / `GCPConfig` instances in
+  addition to raw dicts (as shown above). Dict callers are unaffected.
+
+## Upgrading from 0.1.x → 0.2.0
+
+- The abstract interface classes are no longer re-exported from the
+  top-level `cloudjack` (formerly `cloud`) package. If you were doing
+  `from cloud import CloudStorageBlueprint`, switch to accessing clients
+  via `universal_factory` only — the return type is inferred from the
+  service literal.

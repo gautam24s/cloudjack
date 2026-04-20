@@ -1,3 +1,3 @@
 # Configuration
 
-::: cloud.base.config
+::: cloudjack.base.config

@@ -1,6 +1,6 @@
 [project]
 name = "cloudjack"
-version = "0.3.0"
+version = "0.4.0"
 description = "A unified multi-cloud SDK for AWS and GCP services"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -48,7 +48,7 @@ all-stubs = [
 ]
 
 [project.scripts]
-cloudjack = "cloud.cli:main"
+cloudjack = "cloudjack.cli:main"
 
 [dependency-groups]
 dev = [
@@ -84,7 +84,7 @@ warn_unused_configs = true
 disallow_untyped_defs = false
 
 # Keep visibility into our own untyped imports; silence only third-party
-# libraries that genuinely lack stubs so `mypy cloud/` stays meaningful.
+# libraries that genuinely lack stubs so `mypy cloudjack/` stays meaningful.
 [[tool.mypy.overrides]]
 module = [
     "google.*",
@@ -93,7 +93,7 @@ module = [
 ignore_missing_imports = true
 
 [tool.coverage.run]
-source = ["cloud"]
+source = ["cloudjack"]
 omit = ["tests/*"]
 
 [tool.coverage.report]
@@ -106,15 +106,15 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["cloud"]
+packages = ["cloudjack"]
 
 [tool.hatch.build.targets.wheel.force-include]
-"cloud/py.typed" = "cloud/py.typed"
+"cloudjack/py.typed" = "cloudjack/py.typed"
 
 [tool.hatch.build.targets.sdist]
 include = [
-    "cloud",
-    "cloud/py.typed",
+    "cloudjack",
+    "cloudjack/py.typed",
     "README.md",
     "LICENSE",
     "pyproject.toml",

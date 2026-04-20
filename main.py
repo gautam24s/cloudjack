@@ -1,4 +1,4 @@
-from cloud import universal_factory
+from cloudjack import universal_factory
 
 
 

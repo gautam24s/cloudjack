@@ -1,13 +1,13 @@
 from unittest.mock import patch, MagicMock
 import pytest
 
-from cloud.factory import universal_factory
-from cloud.base import SecretManagerService, StorageService
-from cloud.base.config import AWSConfig, GCPConfig
+from cloudjack.factory import universal_factory
+from cloudjack.base import SecretManagerService, StorageService
+from cloudjack.base.config import AWSConfig, GCPConfig
 
 
 class TestUniversalFactory:
-    @patch("cloud.aws.secret_manager.boto3")
+    @patch("cloudjack.aws.secret_manager.boto3")
     def test_aws_secret_manager(self, mock_boto):
         mock_sts = MagicMock()
         mock_sts.get_caller_identity.return_value = {"Account": "123456789012"}
@@ -24,7 +24,7 @@ class TestUniversalFactory:
         })
         assert isinstance(result, SecretManagerService)
 
-    @patch("cloud.aws.storage.boto3")
+    @patch("cloudjack.aws.storage.boto3")
     def test_aws_storage(self, mock_boto):
         mock_boto.client.return_value = MagicMock()
         result = universal_factory("storage", "aws", {
@@ -34,13 +34,13 @@ class TestUniversalFactory:
         })
         assert isinstance(result, StorageService)
 
-    @patch("cloud.gcp.secret_manager.secretmanager_v1")
+    @patch("cloudjack.gcp.secret_manager.secretmanager_v1")
     def test_gcp_secret_manager(self, mock_sm):
         mock_sm.SecretManagerServiceClient.return_value = MagicMock()
         result = universal_factory("secret_manager", "gcp", {"project_id": "p"})
         assert isinstance(result, SecretManagerService)
 
-    @patch("cloud.gcp.storage.gcs")
+    @patch("cloudjack.gcp.storage.gcs")
     def test_gcp_storage(self, mock_gcs):
         mock_gcs.Client.return_value = MagicMock()
         result = universal_factory("storage", "gcp", {"project_id": "p"})
@@ -54,7 +54,7 @@ class TestUniversalFactory:
         with pytest.raises(ValueError, match="Unsupported service"):
             universal_factory("database", "aws", {})
 
-    @patch("cloud.aws.storage.boto3")
+    @patch("cloudjack.aws.storage.boto3")
     def test_accepts_aws_config_instance(self, mock_boto):
         # A pre-built AWSConfig is accepted as-is (no re-validation / no
         # round-trip through a dict).
@@ -67,7 +67,7 @@ class TestUniversalFactory:
         result = universal_factory("storage", "aws", cfg)
         assert isinstance(result, StorageService)
 
-    @patch("cloud.gcp.storage.gcs")
+    @patch("cloudjack.gcp.storage.gcs")
     def test_accepts_gcp_config_instance(self, mock_gcs):
         mock_gcs.Client.return_value = MagicMock()
         cfg = GCPConfig(project_id="p")

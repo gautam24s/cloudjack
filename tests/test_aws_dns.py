@@ -4,9 +4,9 @@ from unittest.mock import patch, MagicMock
 import pytest
 from botocore.exceptions import ClientError
 
-from cloud.aws.dns import DNS
-from cloud.base.config import AWSConfig
-from cloud.base.exceptions import DNSError, ZoneNotFoundError, ZoneAlreadyExistsError
+from cloudjack.aws.dns import DNS
+from cloudjack.base.config import AWSConfig
+from cloudjack.base.exceptions import DNSError, ZoneNotFoundError, ZoneAlreadyExistsError
 
 
 def _client_error(code: str, msg: str = "error") -> ClientError:
@@ -15,7 +15,7 @@ def _client_error(code: str, msg: str = "error") -> ClientError:
 
 @pytest.fixture
 def svc():
-    with patch("cloud.aws.dns.boto3") as mock_boto:
+    with patch("cloudjack.aws.dns.boto3") as mock_boto:
         mock_client = MagicMock()
         mock_boto.client.return_value = mock_client
         instance = DNS(AWSConfig(

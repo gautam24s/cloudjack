@@ -4,9 +4,9 @@ from unittest.mock import patch, MagicMock
 import pytest
 from botocore.exceptions import ClientError
 
-from cloud.aws.iam import IAM
-from cloud.base.config import AWSConfig
-from cloud.base.exceptions import (
+from cloudjack.aws.iam import IAM
+from cloudjack.base.config import AWSConfig
+from cloudjack.base.exceptions import (
     IAMError,
     RoleNotFoundError,
     RoleAlreadyExistsError,
@@ -31,7 +31,7 @@ TRUST_POLICY = {
 
 @pytest.fixture
 def svc():
-    with patch("cloud.aws.iam.boto3") as mock_boto:
+    with patch("cloudjack.aws.iam.boto3") as mock_boto:
         mock_iam_client = MagicMock()
         mock_sts_client = MagicMock()
         mock_sts_client.get_caller_identity.return_value = {"Account": "123456789012"}

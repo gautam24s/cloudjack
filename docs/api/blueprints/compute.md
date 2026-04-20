@@ -1,3 +1,0 @@
-# ComputeService
-
-::: cloud.base.compute

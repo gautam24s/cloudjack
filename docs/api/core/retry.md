@@ -1,3 +1,3 @@
 # Retry
 
-::: cloud.base.retry
+::: cloudjack.base.retry

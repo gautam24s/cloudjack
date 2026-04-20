@@ -1,3 +1,3 @@
 # AWS Secret Manager
 
-::: cloud.aws.secret_manager
+::: cloudjack.aws.secret_manager

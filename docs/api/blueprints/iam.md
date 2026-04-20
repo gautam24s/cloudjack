@@ -1,3 +1,0 @@
-# IAMService
-
-::: cloud.base.iam

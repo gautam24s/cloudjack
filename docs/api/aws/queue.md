@@ -1,3 +1,3 @@
 # AWS Queue (SQS)
 
-::: cloud.aws.queue
+::: cloudjack.aws.queue

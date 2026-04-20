@@ -1,3 +1,3 @@
 # GCP Compute (Compute Engine)
 
-::: cloud.gcp.compute
+::: cloudjack.gcp.compute

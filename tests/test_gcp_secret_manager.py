@@ -6,9 +6,9 @@ from google.api_core.exceptions import (
     NotFound,
 )
 
-from cloud.gcp.secret_manager import SecretManager
-from cloud.base.config import GCPConfig
-from cloud.base.exceptions import (
+from cloudjack.gcp.secret_manager import SecretManager
+from cloudjack.base.config import GCPConfig
+from cloudjack.base.exceptions import (
     SecretManagerError,
     SecretAlreadyExistsError,
     SecretNotFoundError,
@@ -17,7 +17,7 @@ from cloud.base.exceptions import (
 
 @pytest.fixture
 def sm():
-    with patch("cloud.gcp.secret_manager.secretmanager_v1") as mock_sm:
+    with patch("cloudjack.gcp.secret_manager.secretmanager_v1") as mock_sm:
         mock_client = MagicMock()
         mock_sm.SecretManagerServiceClient.return_value = mock_client
         instance = SecretManager(GCPConfig(project_id="my-project"))

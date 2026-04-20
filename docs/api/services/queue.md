@@ -1,0 +1,3 @@
+# QueueService
+
+::: cloudjack.base.queue

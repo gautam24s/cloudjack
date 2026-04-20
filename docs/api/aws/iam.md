@@ -1,3 +1,3 @@
 # AWS IAM
 
-::: cloud.aws.iam
+::: cloudjack.aws.iam

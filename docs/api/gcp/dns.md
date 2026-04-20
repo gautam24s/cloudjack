@@ -1,3 +1,3 @@
 # GCP DNS (Cloud DNS)
 
-::: cloud.gcp.dns
+::: cloudjack.gcp.dns

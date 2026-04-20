@@ -2,9 +2,9 @@ from unittest.mock import patch, MagicMock
 import pytest
 from botocore.exceptions import ClientError
 
-from cloud.aws.storage import Storage
-from cloud.base.config import AWSConfig
-from cloud.base.exceptions import (
+from cloudjack.aws.storage import Storage
+from cloudjack.base.config import AWSConfig
+from cloudjack.base.exceptions import (
     StorageError,
     BucketNotFoundError,
     BucketAlreadyExistsError,
@@ -18,7 +18,7 @@ def _client_error(code: str) -> ClientError:
 
 @pytest.fixture
 def storage():
-    with patch("cloud.aws.storage.boto3") as mock_boto:
+    with patch("cloudjack.aws.storage.boto3") as mock_boto:
         mock_client = MagicMock()
         mock_boto.client.return_value = mock_client
         instance = Storage(AWSConfig(

@@ -66,13 +66,13 @@ nav:
   - API Reference:
       - Factory: api/factory.md
       - Services:
-          - Secret Manager: api/blueprints/secret_manager.md
-          - Storage: api/blueprints/storage.md
-          - Queue: api/blueprints/queue.md
-          - Compute: api/blueprints/compute.md
-          - DNS: api/blueprints/dns.md
-          - IAM: api/blueprints/iam.md
-          - Logging: api/blueprints/logging.md
+          - Secret Manager: api/services/secret_manager.md
+          - Storage: api/services/storage.md
+          - Queue: api/services/queue.md
+          - Compute: api/services/compute.md
+          - DNS: api/services/dns.md
+          - IAM: api/services/iam.md
+          - Logging: api/services/logging.md
       - AWS:
           - Secret Manager: api/aws/secret_manager.md
           - Storage: api/aws/storage.md

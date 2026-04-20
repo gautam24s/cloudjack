@@ -1,3 +1,3 @@
 # Logger
 
-::: cloud.base.logger
+::: cloudjack.base.logger

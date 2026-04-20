@@ -1,3 +1,3 @@
 # GCP Logging (Cloud Logging)
 
-::: cloud.gcp.logging_service
+::: cloudjack.gcp.logging_service

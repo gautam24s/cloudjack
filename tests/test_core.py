@@ -5,11 +5,11 @@ import asyncio
 import logging
 import pytest
 
-from cloud.base.config import AWSConfig, GCPConfig, validate_config
-from cloud.base.retry import retry
-from cloud.base.client_cache import ClientCache
-from cloud.base.logger import CloudjackLogger, StructuredFormatter
-from cloud.base.async_support import async_wrap, AsyncMixin
+from cloudjack.base.config import AWSConfig, GCPConfig, validate_config
+from cloudjack.base.retry import retry
+from cloudjack.base.client_cache import ClientCache
+from cloudjack.base.logger import CloudjackLogger, StructuredFormatter
+from cloudjack.base.async_support import async_wrap, AsyncMixin
 
 
 # ══════════════════════════════════════════════════════════════════════

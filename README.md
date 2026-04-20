@@ -4,41 +4,41 @@
 [![Python](https://img.shields.io/pypi/pyversions/cloudjack)](https://pypi.org/project/cloudjack/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-A unified Python SDK for interacting with cloud services across multiple providers (AWS, GCP) through a single, consistent interface.
+A unified Python SDK for AWS and GCP. One factory, seven services, the same interface across providers.
 
 ## Features
 
-- **Universal Factory** — One function to create any cloud service client, regardless of provider.
-- **7 Services** — Compute, DNS, IAM, Logging, Queue, Secret Manager, and Storage — each with AWS and GCP implementations.
-- **Provider-agnostic interfaces** — Swap cloud providers without changing your application code.
-- **Async support** — Async variants of all service methods via `asyncio.to_thread`.
-- **Connection pooling** — Singleton `ClientCache` reuses clients per provider+config.
-- **Retry policies** — Configurable retry/backoff decorator.
-- **Config validation** — Pydantic models with automatic credential resolution from env vars.
-- **CLI tool** — `cloudjack --provider aws --service storage list-buckets`.
-- **Typed returns** — `@overload` annotations give your IDE full autocomplete on returned service objects.
+- **Universal factory** — `universal_factory(service, provider, config)` returns a typed client for any supported service/provider pair.
+- **7 services** — Compute, DNS, IAM, Logging, Queue, Secret Manager, Storage — each with AWS and GCP implementations.
+- **Provider-agnostic** — swap `"aws"` ↔ `"gcp"` without changing call sites.
+- **Typed returns** — `@overload` signatures give IDEs precise hover/autocomplete for each service.
+- **Async support** — every service method has an auto-generated `a<method>` coroutine variant that runs the sync call in a thread.
+- **Config flexibility** — pass a raw `dict` or a pre-built `AWSConfig` / `GCPConfig` model; missing fields resolve from environment variables or the SDK's default credential chain.
+- **Connection pooling** — `ClientCache` shares one instance per `(provider, service, config)` key.
+- **Retry policy** — `@retry(...)` decorator with exponential backoff.
+- **Structured logging** — JSON logger for production log pipelines.
+- **CLI** — `cloudjack --provider aws --service storage list-buckets`.
 
 ## Supported Services
 
 | Service | AWS | GCP |
-|---------|-----|-----|
+|---|---|---|
 | Compute | EC2 | Compute Engine |
 | DNS | Route 53 | Cloud DNS |
-| IAM | IAM | IAM |
+| IAM | IAM | IAM Admin |
 | Logging | CloudWatch Logs | Cloud Logging |
 | Queue | SQS | Pub/Sub |
-| Secrets | Secrets Manager | Secret Manager |
+| Secret Manager | Secrets Manager | Secret Manager |
 | Storage | S3 | Cloud Storage |
 
 ## Installation
 
-Requires **Python >= 3.10**.
+Requires **Python >= 3.10** (tested through 3.14).
 
 ```bash
-pip install cloudjack          # core only
-pip install cloudjack[aws]     # with AWS dependencies (boto3)
-pip install cloudjack[gcp]     # with GCP dependencies (google-cloud-*)
-pip install cloudjack[all]     # everything
+pip install cloudjack[aws]     # AWS SDK (boto3)
+pip install cloudjack[gcp]     # GCP SDKs (google-cloud-*)
+pip install cloudjack[all]     # both
 ```
 
 For development:
@@ -46,78 +46,89 @@ For development:
 ```bash
 git clone https://github.com/gautam24s/cloudjack.git
 cd cloudjack
-uv sync
+uv sync --dev
 ```
 
 ## Quick Start
 
 ```python
-from cloud import universal_factory
+from cloudjack import universal_factory
 
-# Create any service client with one function
-client = universal_factory(
-    service_name="storage",       # or: compute, dns, iam, logging, queue, secret_manager
-    cloud_provider="aws",         # or: gcp
+storage = universal_factory(
+    service_name="storage",        # secret_manager | storage | queue | compute | dns | iam | logging
+    cloud_provider="aws",          # aws | gcp
     config={
         "aws_access_key_id": "...",
         "aws_secret_access_key": "...",
         "region_name": "us-east-1",
     },
 )
+
+storage.create_bucket("my-bucket")
+storage.upload_file("my-bucket", "key", "/local/path")
 ```
+
+## Config: dict or model
+
+As of 0.3.0, `universal_factory` accepts a pre-built Pydantic model in addition to a raw dict. Useful when you build config once and pass it around.
+
+```python
+from cloudjack import universal_factory, AWSConfig
+
+cfg = AWSConfig(
+    aws_access_key_id="...",
+    aws_secret_access_key="...",
+    region_name="us-east-1",
+)
+
+storage = universal_factory("storage", "aws", cfg)
+queue   = universal_factory("queue",   "aws", cfg)   # shares the cached client
+```
+
+Passing a `GCPConfig` where `cloud_provider="aws"` (or vice versa) raises `TypeError` at call time.
+
+If you omit fields, Cloudjack resolves them from environment variables (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_DEFAULT_REGION`, `GOOGLE_CLOUD_PROJECT`, `GOOGLE_APPLICATION_CREDENTIALS`) or falls back to the provider SDK's credential chain (EC2 IMDS, Application Default Credentials, etc.).
 
 ## Usage Examples
 
 ### Secret Manager
 
 ```python
-client = universal_factory(
-    service_name="secret_manager",
-    cloud_provider="aws",
-    config={"region_name": "ap-south-1"},
-)
+sm = universal_factory("secret_manager", "aws", {"region_name": "ap-south-1"})
 
-secret = client.get_secret("my_secret")
-client.create_secret("new_secret", "s3cr3t_value")
-client.update_secret("new_secret", "updated_value")
-client.delete_secret("new_secret")
+sm.create_secret("db-password", "s3cr3t")
+value = sm.get_secret("db-password")
+sm.update_secret("db-password", "rotated-value")
+sm.delete_secret("db-password")
 ```
 
-### Cloud Storage
+### Storage
 
 ```python
-storage = universal_factory(
-    service_name="storage",
-    cloud_provider="aws",
-    config={"region_name": "us-east-1"},
-)
+storage = universal_factory("storage", "aws", {"region_name": "us-east-1"})
 
 # Buckets
 storage.create_bucket("my-bucket")
-buckets = storage.list_buckets()
+storage.list_buckets()
 storage.delete_bucket("my-bucket")
 
 # Objects
 storage.upload_file("my-bucket", "data.csv", "/local/data.csv")
 storage.download_file("my-bucket", "data.csv", "/local/copy.csv")
 content = storage.get_object("my-bucket", "data.csv")
-keys = storage.list_objects("my-bucket", prefix="data/")
+storage.list_objects("my-bucket", prefix="data/")
 storage.delete_object("my-bucket", "data.csv")
 
-# Pre-signed URLs
+# Pre-signed URL
 url = storage.generate_signed_url("my-bucket", "data.csv", expiration=3600)
 ```
 
 ### Compute
 
 ```python
-compute = universal_factory(
-    service_name="compute",
-    cloud_provider="aws",
-    config={"region_name": "us-east-1"},
-)
+compute = universal_factory("compute", "aws", {"region_name": "us-east-1"})
 
-instances = compute.list_instances()
+compute.list_instances()
 compute.start_instance("i-0123456789abcdef0")
 compute.stop_instance("i-0123456789abcdef0")
 compute.terminate_instance("i-0123456789abcdef0")
@@ -126,68 +137,80 @@ compute.terminate_instance("i-0123456789abcdef0")
 ### Queue / Messaging
 
 ```python
-queue = universal_factory(
-    service_name="queue",
-    cloud_provider="aws",
-    config={"region_name": "us-east-1"},
-)
+queue = universal_factory("queue", "aws", {"region_name": "us-east-1"})
 
-queue.create_queue("my-queue")
-queue.send_message("my-queue", "Hello, world!")
-messages = queue.receive_messages("my-queue")
-queue.delete_queue("my-queue")
+url = queue.create_queue("tasks")
+queue.send_message(url, "Hello, world!")
+messages = queue.receive_messages(url)
+queue.delete_queue(url)
+```
+
+### Async
+
+Every sync method has an auto-generated `a<method>` async variant that runs on a worker thread. No separate async SDK is required.
+
+```python
+import asyncio
+from cloudjack import universal_factory
+
+async def main():
+    storage = universal_factory("storage", "aws", {"region_name": "us-east-1"})
+    buckets = await storage.alist_buckets()
+    await storage.aupload_file("my-bucket", "hello", "/tmp/hello.txt")
+
+asyncio.run(main())
 ```
 
 ### Switching Providers
 
-The same interface works across providers — just change `cloud_provider`:
+Change the provider string and the config; the rest of your code stays identical.
 
 ```python
 # AWS
-aws_storage = universal_factory(
-    service_name="storage",
-    cloud_provider="aws",
-    config={"region_name": "us-east-1"},
-)
+aws_storage = universal_factory("storage", "aws", {"region_name": "us-east-1"})
 
 # GCP — same methods, different provider
-gcp_storage = universal_factory(
-    service_name="storage",
-    cloud_provider="gcp",
-    config={"project_id": "my-gcp-project"},
-)
+gcp_storage = universal_factory("storage", "gcp", {"project_id": "my-gcp-project"})
 
-# Both have the same interface
 aws_storage.list_buckets()
 gcp_storage.list_buckets()
 ```
 
-## Codebase Review Findings
+### Exceptions
 
-During a recent codebase review, the following issues were identified and successfully resolved:
+Cloudjack wraps provider SDK errors in a shared hierarchy so you catch the same types regardless of provider.
 
-### 1. Logical Bugs
-- **Client Caching ignored:** The `universal_factory` function was instantiating new service clients (e.g., `boto3.client` or GCP abstractions) on every call instead of utilizing the `ClientCache` singleton. This circumvented the intended connection pooling behavior. It has been fixed to properly cache and reuse clients based on the provider and configuration.
+```python
+from cloudjack import BucketNotFoundError, StorageError
 
-### 2. Typing Issues
-- **Mypy Return Type Violations:** In `cloud/gcp/iam.py` and `cloud/gcp/secret_manager.py`, functions declared to return `str` were implicitly returning `Any` due to dynamic properties on the GCP response objects. These have been cast to strings to ensure type-safety.
+try:
+    storage.delete_bucket("missing")
+except BucketNotFoundError:
+    print("Bucket does not exist")
+except StorageError as e:
+    print(f"Storage error: {e}")
+```
 
-### 3. Syntax & Style Issues
-- **Unused Imports (Ruff/Flake8):** Several unused imports were found and removed across the Cloud directory (such as `PolicyNotFoundError` in AWS IAM and `PubsubMessage` in GCP Queue).
+## CLI
 
-*Note: Following extensive bisection on testing anomalies, it was confirmed that tests run stably both locally and in CI.*
+```bash
+cloudjack -p aws -s storage list-buckets
+cloudjack -p aws -s secret_manager create-secret my-secret s3cr3t
+cloudjack -p gcp -s secret_manager get-secret -c '{"project_id":"my-project"}' my-secret
+```
+
+Operation names map dash-separated → underscored method names (`list-buckets` → `list_buckets`). The CLI enforces an allowlist derived from the service interface so arbitrary attributes can't be called.
 
 ## Project Structure
 
 ```
 cloudjack/
-├── main.py
 ├── pyproject.toml
-├── cloud/
+├── cloudjack/
 │   ├── __init__.py
 │   ├── cli.py
-│   ├── factory.py              # Universal factory with provider registry
-│   ├── base/                   # Abstract blueprints and core utilities
+│   ├── factory.py              # universal_factory + provider registry
+│   ├── base/                   # service interfaces and shared utilities
 │   │   ├── compute.py          # ComputeService (ABC)
 │   │   ├── dns.py              # DNSService (ABC)
 │   │   ├── iam.py              # IAMService (ABC)
@@ -196,82 +219,51 @@ cloudjack/
 │   │   ├── secret_manager.py   # SecretManagerService (ABC)
 │   │   ├── storage.py          # StorageService (ABC)
 │   │   ├── async_support.py    # AsyncMixin
-│   │   ├── client_cache.py     # Singleton client cache
+│   │   ├── client_cache.py     # singleton client cache
 │   │   ├── config.py           # Pydantic config models
-│   │   ├── exceptions.py       # Exception hierarchy
-│   │   ├── logger.py           # Structured JSON logging
-│   │   └── retry.py            # Retry/backoff decorator
+│   │   ├── exceptions.py       # exception hierarchy
+│   │   ├── logger.py           # structured JSON logger
+│   │   ├── retry.py            # @retry decorator
+│   │   └── types.py            # return-shape TypedDicts
 │   ├── aws/                    # AWS implementations
 │   └── gcp/                    # GCP implementations
-├── tests/                      # Full test suite
+├── tests/                      # test suite (uv run pytest)
 └── docs/                       # MkDocs documentation
 ```
 
-## Adding a New Cloud Provider
+## Extending
 
-1. Create a directory under `cloud/<provider>/`.
-2. Implement service classes inheriting from the base blueprints.
-3. Create a `factory.py` with a `SERVICE_REGISTRY` dict mapping service names to classes.
-4. Register it in `cloud/factory.py` under `_FACTORY_REGISTRY`.
+**Add a service** — add an ABC in `cloudjack/base/<service>.py`, exceptions in `cloudjack/base/exceptions.py`, implementations in `cloudjack/aws/<service>.py` and `cloudjack/gcp/<service>.py`, register the class in each provider's `SERVICE_REGISTRY`, and add an `@overload` in `cloudjack/factory.py`.
 
-## Exceptions
+**Add a provider** — create `cloudjack/<provider>/` with a `factory.py` exporting `SERVICE_REGISTRY`, register it in `_PROVIDER_MODULES` in `cloudjack/factory.py`, add a matching Pydantic model in `cloudjack/base/config.py`, and extend the `existing_cloud_providers` literal.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the full process.
+
+## Exception Reference
 
 | Exception | Description |
 |---|---|
-| `CloudjackError` | Root exception for all Cloudjack errors |
-| `SecretManagerError` | Base exception for secret manager operations |
-| `SecretNotFoundError` | Secret does not exist |
-| `SecretAlreadyExistsError` | Secret already exists |
-| `StorageError` | Base exception for storage operations |
-| `BucketNotFoundError` | Bucket does not exist |
-| `BucketAlreadyExistsError` | Bucket already exists |
-| `ObjectNotFoundError` | Object does not exist |
-| `QueueError` | Base exception for queue operations |
-| `QueueNotFoundError` | Queue or topic does not exist |
-| `QueueAlreadyExistsError` | Queue or topic already exists |
-| `MessageError` | Failed to send, receive, or delete a message |
-| `ComputeError` | Base exception for compute operations |
-| `InstanceNotFoundError` | VM instance not found |
-| `InstanceAlreadyExistsError` | VM instance already exists |
-| `DNSError` | Base exception for DNS operations |
-| `ZoneNotFoundError` | DNS zone not found |
-| `ZoneAlreadyExistsError` | DNS zone already exists |
-| `RecordNotFoundError` | DNS record not found |
-| `IAMError` | Base exception for IAM operations |
-| `RoleNotFoundError` | IAM role not found |
-| `RoleAlreadyExistsError` | IAM role already exists |
-| `PolicyNotFoundError` | IAM policy not found |
-| `LoggingError` | Base exception for logging operations |
-| `LogGroupNotFoundError` | Log group or sink not found |
-| `LogGroupAlreadyExistsError` | Log group or sink already exists |
+| `CloudjackError` | Root of the exception hierarchy |
+| `SecretManagerError` / `SecretNotFoundError` / `SecretAlreadyExistsError` | Secret manager operations |
+| `StorageError` / `BucketNotFoundError` / `BucketAlreadyExistsError` / `ObjectNotFoundError` | Storage operations |
+| `QueueError` / `QueueNotFoundError` / `QueueAlreadyExistsError` / `MessageError` | Queue / messaging operations |
+| `ComputeError` / `InstanceNotFoundError` / `InstanceAlreadyExistsError` | Compute operations |
+| `DNSError` / `ZoneNotFoundError` / `ZoneAlreadyExistsError` / `RecordNotFoundError` | DNS operations |
+| `IAMError` / `RoleNotFoundError` / `RoleAlreadyExistsError` / `PolicyNotFoundError` | IAM operations |
+| `LoggingError` / `LogGroupNotFoundError` / `LogGroupAlreadyExistsError` | Logging operations |
+
+## Roadmap
+
+- [ ] **Azure support** — concrete implementations behind the existing interfaces.
+- [ ] **DigitalOcean Spaces** — S3-compatible, thin adapter.
+- [ ] **Integration tests** against LocalStack (AWS) and the GCP emulator.
+
+### Recently shipped
+
+- **0.3.0** — `*Blueprint` → `*Service` rename; `universal_factory` accepts `AWSConfig` / `GCPConfig` instances directly.
+- **0.2.0** — security and correctness audit: removed leaked credentials, narrowed GCP exception handling, etag retry on GCP IAM policy updates, symmetric `delete_queue`, hardened `ClientCache` locking, CLI allowlist, factory cache-key fix, hid interface ABCs from the public package namespace.
+- **0.1.x** — initial multi-cloud factory, AWS + GCP implementations for all 7 services, async mixin, Pydantic config, CLI, PyPI release.
 
 ## License
 
 MIT
-
-## Roadmap
-
-### Providers
-
-- [ ] **Azure support** — Implement Azure services behind the existing blueprints.
-- [ ] **DigitalOcean Spaces** — S3-compatible, minimal adapter needed.
-
-### Core Improvements
-
-- [ ] **Integration tests** — Test against real cloud APIs (LocalStack for AWS, emulator for GCP) in CI.
-- [ ] **GitHub Actions CI** — Automated lint, test, type-check on push/PR.
-
-### Done
-
-- [x] 7 service blueprints (Compute, DNS, IAM, Logging, Queue, Secret Manager, Storage)
-- [x] AWS and GCP implementations for all services
-- [x] Async support via `AsyncMixin`
-- [x] Connection pooling via `ClientCache`
-- [x] Retry policies with configurable backoff
-- [x] Pydantic config validation with credential auto-resolution
-- [x] Structured JSON logging
-- [x] CLI tool
-- [x] Published to PyPI with optional extras
-- [x] Full test suite with coverage reporting
-- [x] API documentation via MkDocs
-- [x] Migration guide and contributing guide

@@ -1,3 +1,3 @@
 # AWS Logging (CloudWatch Logs)
 
-::: cloud.aws.logging_service
+::: cloudjack.aws.logging_service

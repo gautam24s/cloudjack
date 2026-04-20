@@ -19,8 +19,8 @@ uv sync --dev
 ## Project Structure
 
 ```
-cloud/
-├── base/           # Abstract blueprints and core utilities
+cloudjack/
+├── base/           # Abstract service interfaces and core utilities
 │   ├── compute.py
 │   ├── dns.py
 │   ├── iam.py
@@ -43,20 +43,21 @@ tests/              # Unit tests (pytest)
 
 ## Adding a New Service
 
-1. **Create the blueprint** in `cloud/base/<service>.py` — define an ABC with abstract methods.
-2. **Add exceptions** to `cloud/base/exceptions.py`.
-3. **Implement for AWS** in `cloud/aws/<service>.py`.
-4. **Implement for GCP** in `cloud/gcp/<service>.py`.
-5. **Register** the service in `cloud/aws/factory.py` and `cloud/gcp/factory.py`.
-6. **Add an `@overload`** to `cloud/factory.py`.
-7. **Export** the blueprint from `cloud/base/__init__.py`.
+1. **Create the service interface** in `cloudjack/base/<service>.py` — define an ABC (named `<Name>Service`) with abstract methods.
+2. **Add exceptions** to `cloudjack/base/exceptions.py`.
+3. **Implement for AWS** in `cloudjack/aws/<service>.py`.
+4. **Implement for GCP** in `cloudjack/gcp/<service>.py`.
+5. **Register** the service in `cloudjack/aws/factory.py` and `cloudjack/gcp/factory.py`.
+6. **Add an `@overload`** to `cloudjack/factory.py`.
+7. **Export** the service interface from `cloudjack/base/__init__.py`.
 8. **Write tests** in `tests/test_aws_<service>.py` and `tests/test_gcp_<service>.py`.
 
 ## Adding a New Provider
 
-1. Create `cloud/<provider>/` with an `__init__.py` and `factory.py`.
-2. Implement each service blueprint.
-3. Register the provider in `cloud/factory.py`'s `_FACTORY_REGISTRY`.
+1. Create `cloudjack/<provider>/` with an `__init__.py` and `factory.py`.
+2. Implement each service interface.
+3. Register the provider in `cloudjack/factory.py`'s `_PROVIDER_MODULES`.
+4. Register a matching Pydantic config model in `cloudjack/base/config.py`'s `CONFIG_REGISTRY` and extend `existing_cloud_providers` in `cloudjack/base/supported_services.py`.
 
 ## Running Tests
 
@@ -65,7 +66,7 @@ tests/              # Unit tests (pytest)
 uv run pytest
 
 # Run with coverage
-uv run pytest --cov=cloud --cov-report=term-missing
+uv run pytest --cov=cloudjack --cov-report=term-missing
 
 # Run a specific test file
 uv run pytest tests/test_aws_storage.py -v
@@ -74,7 +75,7 @@ uv run pytest tests/test_aws_storage.py -v
 ## Type Checking
 
 ```bash
-uv run mypy cloud/ --ignore-missing-imports
+uv run mypy cloudjack/ --ignore-missing-imports
 ```
 
 ## Code Style

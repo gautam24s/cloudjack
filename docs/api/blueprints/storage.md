@@ -1,3 +1,0 @@
-# StorageService
-
-::: cloud.base.storage

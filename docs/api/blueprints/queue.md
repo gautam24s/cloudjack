@@ -1,3 +1,0 @@
-# QueueService
-
-::: cloud.base.queue

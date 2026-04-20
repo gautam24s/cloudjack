@@ -1,0 +1,3 @@
+# DNSService
+
+::: cloudjack.base.dns

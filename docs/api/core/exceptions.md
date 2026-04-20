@@ -1,3 +1,3 @@
 # Exceptions
 
-::: cloud.base.exceptions
+::: cloudjack.base.exceptions

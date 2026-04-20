@@ -1,3 +1,3 @@
 # AWS Storage (S3)
 
-::: cloud.aws.storage
+::: cloudjack.aws.storage

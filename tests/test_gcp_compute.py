@@ -5,9 +5,9 @@ import pytest
 
 from google.api_core import exceptions as gcp_exceptions
 
-from cloud.gcp.compute import Compute
-from cloud.base.config import GCPConfig
-from cloud.base.exceptions import (
+from cloudjack.gcp.compute import Compute
+from cloudjack.base.config import GCPConfig
+from cloudjack.base.exceptions import (
     ComputeError,
     InstanceNotFoundError,
     InstanceAlreadyExistsError,
@@ -17,8 +17,8 @@ from cloud.base.exceptions import (
 @pytest.fixture
 def svc():
     with (
-        patch("cloud.gcp.compute.compute_v1.InstancesClient") as MockInstances,
-        patch("cloud.gcp.compute.compute_v1.ZoneOperationsClient") as MockOps,
+        patch("cloudjack.gcp.compute.compute_v1.InstancesClient") as MockInstances,
+        patch("cloudjack.gcp.compute.compute_v1.ZoneOperationsClient") as MockOps,
     ):
         mock_instances = MockInstances.return_value
         mock_ops = MockOps.return_value

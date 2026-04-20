@@ -1,3 +1,3 @@
 # GCP Secret Manager
 
-::: cloud.gcp.secret_manager
+::: cloudjack.gcp.secret_manager

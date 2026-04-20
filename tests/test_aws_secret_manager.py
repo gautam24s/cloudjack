@@ -2,9 +2,9 @@ from unittest.mock import patch, MagicMock
 import pytest
 from botocore.exceptions import ClientError
 
-from cloud.aws.secret_manager import SecretManager
-from cloud.base.config import AWSConfig
-from cloud.base.exceptions import (
+from cloudjack.aws.secret_manager import SecretManager
+from cloudjack.base.config import AWSConfig
+from cloudjack.base.exceptions import (
     SecretManagerError,
     SecretAlreadyExistsError,
     SecretNotFoundError,
@@ -17,7 +17,7 @@ def _client_error(code: str, message: str = "error") -> ClientError:
 
 @pytest.fixture
 def sm():
-    with patch("cloud.aws.secret_manager.boto3") as mock_boto:
+    with patch("cloudjack.aws.secret_manager.boto3") as mock_boto:
         mock_sts = MagicMock()
         mock_sts.get_caller_identity.return_value = {"Account": "123456789012"}
         mock_sm_client = MagicMock()

@@ -5,14 +5,14 @@ import pytest
 
 from google.api_core import exceptions as gcp_exceptions
 
-from cloud.gcp.dns import DNS
-from cloud.base.config import GCPConfig
-from cloud.base.exceptions import DNSError, ZoneNotFoundError, ZoneAlreadyExistsError
+from cloudjack.gcp.dns import DNS
+from cloudjack.base.config import GCPConfig
+from cloudjack.base.exceptions import DNSError, ZoneNotFoundError, ZoneAlreadyExistsError
 
 
 @pytest.fixture
 def svc():
-    with patch("cloud.gcp.dns.cloud_dns.Client") as MockClient:
+    with patch("cloudjack.gcp.dns.cloud_dns.Client") as MockClient:
         mock_client = MockClient.return_value
         instance = DNS(GCPConfig(project_id="my-project"))
         yield instance, mock_client

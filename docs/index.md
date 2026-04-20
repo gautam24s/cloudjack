@@ -12,7 +12,7 @@ A unified Python SDK for interacting with cloud services across multiple provide
 ## Quick Example
 
 ```python
-from cloud import universal_factory
+from cloudjack import universal_factory
 
 # AWS S3
 storage = universal_factory("storage", "aws", {"region_name": "us-east-1"})

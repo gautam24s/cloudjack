@@ -5,9 +5,9 @@ import pytest
 
 from google.api_core import exceptions as gcp_exceptions
 
-from cloud.gcp.queue import Queue
-from cloud.base.config import GCPConfig
-from cloud.base.exceptions import (
+from cloudjack.gcp.queue import Queue
+from cloudjack.base.config import GCPConfig
+from cloudjack.base.exceptions import (
     QueueError,
     QueueNotFoundError,
     QueueAlreadyExistsError,
@@ -18,8 +18,8 @@ from cloud.base.exceptions import (
 @pytest.fixture
 def svc():
     with (
-        patch("cloud.gcp.queue.pubsub_v1.PublisherClient") as MockPub,
-        patch("cloud.gcp.queue.pubsub_v1.SubscriberClient") as MockSub,
+        patch("cloudjack.gcp.queue.pubsub_v1.PublisherClient") as MockPub,
+        patch("cloudjack.gcp.queue.pubsub_v1.SubscriberClient") as MockSub,
     ):
         mock_pub = MockPub.return_value
         mock_sub = MockSub.return_value

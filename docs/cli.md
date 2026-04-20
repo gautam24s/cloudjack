@@ -41,6 +41,6 @@ cloudjack -p aws -s queue send-message \
 
 ## Source
 
-::: cloud.cli
+::: cloudjack.cli
     options:
       show_root_heading: false

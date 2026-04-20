@@ -1,3 +1,3 @@
 # AWS Compute (EC2)
 
-::: cloud.aws.compute
+::: cloudjack.aws.compute

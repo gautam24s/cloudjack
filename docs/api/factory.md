@@ -1,3 +1,3 @@
 # Universal Factory
 
-::: cloud.factory
+::: cloudjack.factory

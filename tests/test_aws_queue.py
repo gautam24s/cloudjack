@@ -4,9 +4,9 @@ from unittest.mock import patch, MagicMock
 import pytest
 from botocore.exceptions import ClientError
 
-from cloud.aws.queue import Queue
-from cloud.base.config import AWSConfig
-from cloud.base.exceptions import (
+from cloudjack.aws.queue import Queue
+from cloudjack.base.config import AWSConfig
+from cloudjack.base.exceptions import (
     QueueError,
     QueueNotFoundError,
     QueueAlreadyExistsError,
@@ -20,7 +20,7 @@ def _client_error(code: str, msg: str = "error") -> ClientError:
 
 @pytest.fixture
 def svc():
-    with patch("cloud.aws.queue.boto3") as mock_boto:
+    with patch("cloudjack.aws.queue.boto3") as mock_boto:
         mock_client = MagicMock()
         mock_boto.client.return_value = mock_client
         instance = Queue(AWSConfig(

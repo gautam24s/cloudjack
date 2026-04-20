@@ -1,3 +1,0 @@
-# DNSService
-
-::: cloud.base.dns

@@ -4,9 +4,9 @@ import pytest
 from google.api_core.exceptions import NotFound, Conflict
 from google.cloud.exceptions import GoogleCloudError
 
-from cloud.gcp.storage import Storage
-from cloud.base.config import GCPConfig
-from cloud.base.exceptions import (
+from cloudjack.gcp.storage import Storage
+from cloudjack.base.config import GCPConfig
+from cloudjack.base.exceptions import (
     StorageError,
     BucketNotFoundError,
     BucketAlreadyExistsError,
@@ -16,7 +16,7 @@ from cloud.base.exceptions import (
 
 @pytest.fixture
 def storage():
-    with patch("cloud.gcp.storage.gcs") as mock_gcs:
+    with patch("cloudjack.gcp.storage.gcs") as mock_gcs:
         mock_client = MagicMock()
         mock_gcs.Client.return_value = mock_client
         instance = Storage(GCPConfig(project_id="my-project"))
