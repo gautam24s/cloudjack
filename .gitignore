@@ -18,10 +18,18 @@ htmlcov/
 coverage.xml
 
 # Credentials / secrets — never commit
+# Patterns are case-sensitive on Linux, so cover both common casings.
 *token*.txt
+*Token*.txt
+*TOKEN*.txt
 *secret*.txt
+*Secret*.txt
+*SECRET*.txt
 *.pem
 *.key
+*.token
+PYPI_TOKEN*
+pypi-token*
 credentials*.json
 service-account*.json
 .env
