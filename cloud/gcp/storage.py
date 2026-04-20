@@ -12,7 +12,7 @@ from cloud.base.exceptions import (
     BucketAlreadyExistsError,
     ObjectNotFoundError,
 )
-from cloud.base import CloudStorageBlueprint
+from cloud.base import StorageService
 from cloud.base.config import GCPConfig
 
 
@@ -27,7 +27,7 @@ def _handle_error(e: Exception, message: str) -> NoReturn:
     raise StorageError(message) from e
 
 
-class Storage(CloudStorageBlueprint):
+class Storage(StorageService):
     """GCP Cloud Storage implementation for cloud storage CRUD operations."""
 
     def __init__(self, config: GCPConfig) -> None:

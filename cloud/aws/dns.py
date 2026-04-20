@@ -8,7 +8,7 @@ from typing import Any, NoReturn, cast
 import boto3
 from botocore.exceptions import ClientError
 
-from cloud.base.dns import DNSBlueprint
+from cloud.base.dns import DNSService
 from cloud.base.exceptions import (
     DNSError,
     ZoneNotFoundError,
@@ -28,7 +28,7 @@ def _handle(e: ClientError, msg: str) -> NoReturn:
     raise (exc or DNSError)(msg) from e
 
 
-class DNS(DNSBlueprint):
+class DNS(DNSService):
     """AWS Route 53 DNS service.
 
     Attributes:

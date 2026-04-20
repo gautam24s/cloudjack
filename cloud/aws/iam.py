@@ -8,7 +8,7 @@ from typing import Any, NoReturn, cast
 import boto3
 from botocore.exceptions import ClientError
 
-from cloud.base.iam import IAMBlueprint
+from cloud.base.iam import IAMService
 from cloud.base.exceptions import (
     IAMError,
     RoleNotFoundError,
@@ -29,7 +29,7 @@ def _handle(e: ClientError, msg: str) -> NoReturn:
     raise (exc or IAMError)(msg) from e
 
 
-class IAM(IAMBlueprint):
+class IAM(IAMService):
     """AWS IAM service.
 
     Attributes:

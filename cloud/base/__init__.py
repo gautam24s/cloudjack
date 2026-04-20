@@ -5,9 +5,9 @@ Import them to type-hint your own code or to create custom providers.
 """
 
 from .async_support import AsyncMixin, async_wrap
-from .compute import ComputeBlueprint
+from .compute import ComputeService
 from .config import AWSConfig, CONFIG_REGISTRY, GCPConfig, validate_config
-from .dns import DNSBlueprint
+from .dns import DNSService
 from .exceptions import (
     BucketAlreadyExistsError,
     BucketNotFoundError,
@@ -36,12 +36,12 @@ from .exceptions import (
     ZoneAlreadyExistsError,
     ZoneNotFoundError,
 )
-from .iam import IAMBlueprint
-from .logging_service import LoggingBlueprint
-from .queue import QueueBlueprint
+from .iam import IAMService
+from .logging_service import LoggingService
+from .queue import QueueService
 from .retry import retry
-from .secret_manager import SecretManagerBlueprint
-from .storage import CloudStorageBlueprint
+from .secret_manager import SecretManagerService
+from .storage import StorageService
 from .supported_services import existing_cloud_providers, existing_services
 from .types import (
     InstanceDict,
@@ -55,14 +55,14 @@ from .types import (
 
 
 __all__ = [
-    # Blueprints
-    "SecretManagerBlueprint",
-    "CloudStorageBlueprint",
-    "QueueBlueprint",
-    "ComputeBlueprint",
-    "DNSBlueprint",
-    "IAMBlueprint",
-    "LoggingBlueprint",
+    # Service interfaces
+    "SecretManagerService",
+    "StorageService",
+    "QueueService",
+    "ComputeService",
+    "DNSService",
+    "IAMService",
+    "LoggingService",
     # Service registry
     "existing_services",
     "existing_cloud_providers",

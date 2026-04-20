@@ -9,14 +9,14 @@ from cloud.base.exceptions import (
     SecretNotFoundError,
 )
 
-from cloud.base import SecretManagerBlueprint
+from cloud.base import SecretManagerService
 from cloud.base.config import AWSConfig
 
 
-class SecretManager(SecretManagerBlueprint):
+class SecretManager(SecretManagerService):
     """AWS Secrets Manager implementation for secret management.
     
-    This provider implements the SecretManagerBlueprint interface for AWS Secrets Manager,
+    This provider implements the SecretManagerService interface for AWS Secrets Manager,
     allowing creation, retrieval, updating, and deletion of secrets in AWS.
     
     Attributes:

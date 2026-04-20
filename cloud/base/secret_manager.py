@@ -4,7 +4,7 @@ import asyncio
 from abc import ABC, abstractmethod
 
 
-class SecretManagerBlueprint(ABC):
+class SecretManagerService(ABC):
     """Abstract interface for secret management services.
 
     Maps to AWS Secrets Manager and GCP Secret Manager.

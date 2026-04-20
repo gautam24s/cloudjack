@@ -18,18 +18,24 @@ import importlib
 from typing import Literal, overload
 
 from cloud.base import (
-    CloudStorageBlueprint,
-    ComputeBlueprint,
-    DNSBlueprint,
-    IAMBlueprint,
-    LoggingBlueprint,
-    QueueBlueprint,
-    SecretManagerBlueprint,
+    StorageService,
+    ComputeService,
+    DNSService,
+    IAMService,
+    LoggingService,
+    QueueService,
+    SecretManagerService,
     existing_cloud_providers,
     existing_services,
 )
 from cloud.base.client_cache import ClientCache
-from cloud.base.config import validate_config
+from cloud.base.config import AWSConfig, GCPConfig, validate_config
+
+# Accepted shapes for the ``config`` parameter.  Dicts are validated through
+# the Pydantic models; already-validated :class:`AWSConfig` / :class:`GCPConfig`
+# instances are used as-is so callers who construct them explicitly don't
+# pay re-validation cost.
+ConfigInput = dict | AWSConfig | GCPConfig | None
 
 
 # Provider → (module path, install-extra name). The module must export a
@@ -76,74 +82,95 @@ def _load_service_registry(cloud_provider: str) -> dict[str, type]:
     return registry
 
 
+def _resolve_config(
+    cloud_provider: str, config: ConfigInput
+) -> AWSConfig | GCPConfig:
+    """Coerce *config* to the provider's Pydantic model.
+
+    Pre-validated :class:`AWSConfig` / :class:`GCPConfig` instances are
+    returned unchanged (with a provider-match check); dicts and ``None`` go
+    through :func:`validate_config`.
+    """
+    if isinstance(config, (AWSConfig, GCPConfig)):
+        expected = AWSConfig if cloud_provider == "aws" else GCPConfig
+        if not isinstance(config, expected):
+            raise TypeError(
+                f"config must be {expected.__name__} for "
+                f"cloud_provider={cloud_provider!r}, "
+                f"got {type(config).__name__}"
+            )
+        return config
+    return validate_config(cloud_provider, config)
+
+
 @overload
 def universal_factory(
     service_name: Literal["secret_manager"],
     cloud_provider: existing_cloud_providers,
-    config: dict | None = None,
-) -> SecretManagerBlueprint: ...
+    config: ConfigInput = None,
+) -> SecretManagerService: ...
 
 
 @overload
 def universal_factory(
     service_name: Literal["storage"],
     cloud_provider: existing_cloud_providers,
-    config: dict | None = None,
-) -> CloudStorageBlueprint: ...
+    config: ConfigInput = None,
+) -> StorageService: ...
 
 
 @overload
 def universal_factory(
     service_name: Literal["queue"],
     cloud_provider: existing_cloud_providers,
-    config: dict | None = None,
-) -> QueueBlueprint: ...
+    config: ConfigInput = None,
+) -> QueueService: ...
 
 
 @overload
 def universal_factory(
     service_name: Literal["compute"],
     cloud_provider: existing_cloud_providers,
-    config: dict | None = None,
-) -> ComputeBlueprint: ...
+    config: ConfigInput = None,
+) -> ComputeService: ...
 
 
 @overload
 def universal_factory(
     service_name: Literal["dns"],
     cloud_provider: existing_cloud_providers,
-    config: dict | None = None,
-) -> DNSBlueprint: ...
+    config: ConfigInput = None,
+) -> DNSService: ...
 
 
 @overload
 def universal_factory(
     service_name: Literal["iam"],
     cloud_provider: existing_cloud_providers,
-    config: dict | None = None,
-) -> IAMBlueprint: ...
+    config: ConfigInput = None,
+) -> IAMService: ...
 
 
 @overload
 def universal_factory(
     service_name: Literal["logging"],
     cloud_provider: existing_cloud_providers,
-    config: dict | None = None,
-) -> LoggingBlueprint: ...
+    config: ConfigInput = None,
+) -> LoggingService: ...
 
 
 def universal_factory(
     service_name: existing_services,
     cloud_provider: existing_cloud_providers,
-    config: dict | None = None,
+    config: ConfigInput = None,
 ) -> (
-    SecretManagerBlueprint
-    | CloudStorageBlueprint
-    | QueueBlueprint
-    | ComputeBlueprint
-    | DNSBlueprint
-    | IAMBlueprint
-    | LoggingBlueprint
+    SecretManagerService
+    | StorageService
+    | QueueService
+    | ComputeService
+    | DNSService
+    | IAMService
+    | LoggingService
 ):
     """Create a cloud service client.
 
@@ -155,16 +182,19 @@ def universal_factory(
         service_name: Service identifier (``secret_manager``, ``storage``,
             ``queue``, ``compute``, ``dns``, ``iam``, ``logging``).
         cloud_provider: Cloud provider (``aws`` or ``gcp``).
-        config: Optional configuration dict. Missing fields fall back to
-            environment variables and the provider SDK's default credential
-            chain; see :class:`cloud.base.config.AWSConfig` /
-            :class:`cloud.base.config.GCPConfig`.
+        config: Optional configuration. Accepts either a raw ``dict`` (which
+            is validated against the provider's Pydantic model) or a ready
+            :class:`AWSConfig` / :class:`GCPConfig` instance (used as-is).
+            Missing fields fall back to environment variables and the
+            provider SDK's default credential chain.
 
     Returns:
-        A cached service instance conforming to the matching blueprint.
+        A cached service instance for the requested service.
 
     Raises:
         ValueError: If the cloud provider or service is not supported.
+        TypeError: If *config* is a validated model that doesn't match the
+            *cloud_provider* (e.g. passing a GCPConfig for the AWS provider).
         ImportError: If the provider's optional dependencies are missing.
             Install with ``pip install 'cloudjack[<provider>]'``.
     """
@@ -176,7 +206,7 @@ def universal_factory(
         )
 
     service_class = provider_services[service_name]
-    config_obj = validate_config(cloud_provider, config)
+    config_obj = _resolve_config(cloud_provider, config)
     # exclude_none so callers who pass {"region_name": None} share a cache
     # entry with callers who omit the key entirely.
     config_dict = config_obj.model_dump(exclude_none=True)

@@ -29,7 +29,7 @@ The CLI entrypoint `cloudjack` (registered in `pyproject.toml` → `cloud.cli:ma
 
 Every service has three layers:
 
-1. **`cloud/base/<service>.py`** — an `ABC` blueprint that defines the cross-provider method signatures (e.g. `CloudStorageBlueprint`, `QueueBlueprint`). Exported from `cloud/base/__init__.py`.
+1. **`cloud/base/<service>.py`** — an `ABC` blueprint that defines the cross-provider method signatures (e.g. `StorageService`, `QueueService`). Exported from `cloud/base/__init__.py`.
 2. **`cloud/aws/<service>.py` and `cloud/gcp/<service>.py`** — concrete subclasses that wrap the provider SDK (boto3 / google-cloud-*). Each provider file defines a local `_ERROR_MAP` dict and a `_handle_*` helper that translates SDK errors into the shared exception hierarchy in `cloud/base/exceptions.py` (`CloudjackError` is the root).
 3. **`cloud/aws/factory.py` and `cloud/gcp/factory.py`** — each exports a `SERVICE_REGISTRY: dict[str, type]` mapping the service name to its class.
 

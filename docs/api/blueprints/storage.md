@@ -1,3 +1,3 @@
-# CloudStorageBlueprint
+# StorageService
 
 ::: cloud.base.storage

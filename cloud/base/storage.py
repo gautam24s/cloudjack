@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 from typing import Any
 
 
-class CloudStorageBlueprint(ABC):
+class StorageService(ABC):
     """Abstract interface for cloud storage operations.
 
     Defines bucket and object CRUD, plus signed-URL generation.

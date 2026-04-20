@@ -7,13 +7,13 @@ from typing import Any, cast
 from google.api_core import exceptions as gcp_exceptions
 from google.cloud import compute_v1
 
-from cloud.base.compute import ComputeBlueprint
+from cloud.base.compute import ComputeService
 from cloud.base.config import GCPConfig
 from cloud.base.exceptions import ComputeError, InstanceNotFoundError, InstanceAlreadyExistsError
 from cloud.base.types import InstanceDict
 
 
-class Compute(ComputeBlueprint):
+class Compute(ComputeService):
     """GCP Compute Engine service.
 
     Attributes:

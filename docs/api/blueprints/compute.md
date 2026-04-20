@@ -1,3 +1,3 @@
-# ComputeBlueprint
+# ComputeService
 
 ::: cloud.base.compute

@@ -1,3 +1,3 @@
-# DNSBlueprint
+# DNSService
 
 ::: cloud.base.dns

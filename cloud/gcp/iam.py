@@ -8,7 +8,7 @@ from google.api_core import exceptions as gcp_exceptions
 from google.cloud import iam_admin_v1
 from google.iam.v1 import iam_policy_pb2  # noqa: F401 — used by the client
 
-from cloud.base.iam import IAMBlueprint
+from cloud.base.iam import IAMService
 from cloud.base.config import GCPConfig
 from cloud.base.exceptions import (
     IAMError,
@@ -22,7 +22,7 @@ from cloud.base.types import PolicyDict, RoleDict
 _POLICY_MAX_RETRIES = 5
 
 
-class IAM(IAMBlueprint):
+class IAM(IAMService):
     """GCP IAM service.
 
     Uses the IAM Admin API for custom role management and

@@ -7,7 +7,7 @@ from typing import Any
 from cloud.base.types import RecordDict, ZoneDict
 
 
-class DNSBlueprint(ABC):
+class DNSService(ABC):
     """Abstract interface for DNS zone and record management.
 
     Maps to AWS Route 53 and GCP Cloud DNS.

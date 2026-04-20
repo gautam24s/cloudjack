@@ -1,3 +1,3 @@
-# IAMBlueprint
+# IAMService
 
 ::: cloud.base.iam

@@ -9,7 +9,7 @@ A unified Python SDK for interacting with cloud services across multiple provide
 ## Features
 
 - **Universal Factory** — One function to create any cloud service client, regardless of provider.
-- **7 Service Blueprints** — Compute, DNS, IAM, Logging, Queue, Secret Manager, and Storage.
+- **7 Services** — Compute, DNS, IAM, Logging, Queue, Secret Manager, and Storage — each with AWS and GCP implementations.
 - **Provider-agnostic interfaces** — Swap cloud providers without changing your application code.
 - **Async support** — Async variants of all service methods via `asyncio.to_thread`.
 - **Connection pooling** — Singleton `ClientCache` reuses clients per provider+config.
@@ -188,13 +188,13 @@ cloudjack/
 │   ├── cli.py
 │   ├── factory.py              # Universal factory with provider registry
 │   ├── base/                   # Abstract blueprints and core utilities
-│   │   ├── compute.py          # ComputeBlueprint (ABC)
-│   │   ├── dns.py              # DNSBlueprint (ABC)
-│   │   ├── iam.py              # IAMBlueprint (ABC)
-│   │   ├── logging_service.py  # LoggingBlueprint (ABC)
-│   │   ├── queue.py            # QueueBlueprint (ABC)
-│   │   ├── secret_manager.py   # SecretManagerBlueprint (ABC)
-│   │   ├── storage.py          # CloudStorageBlueprint (ABC)
+│   │   ├── compute.py          # ComputeService (ABC)
+│   │   ├── dns.py              # DNSService (ABC)
+│   │   ├── iam.py              # IAMService (ABC)
+│   │   ├── logging_service.py  # LoggingService (ABC)
+│   │   ├── queue.py            # QueueService (ABC)
+│   │   ├── secret_manager.py   # SecretManagerService (ABC)
+│   │   ├── storage.py          # StorageService (ABC)
 │   │   ├── async_support.py    # AsyncMixin
 │   │   ├── client_cache.py     # Singleton client cache
 │   │   ├── config.py           # Pydantic config models

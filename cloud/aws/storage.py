@@ -10,7 +10,7 @@ from cloud.base.exceptions import (
     BucketAlreadyExistsError,
     ObjectNotFoundError,
 )
-from cloud.base import CloudStorageBlueprint
+from cloud.base import StorageService
 from cloud.base.config import AWSConfig
 
 _ERROR_MAP = {
@@ -28,7 +28,7 @@ def _handle_client_error(e: ClientError, message: str) -> NoReturn:
     raise (exc_class or StorageError)(message) from e
 
 
-class Storage(CloudStorageBlueprint):
+class Storage(StorageService):
     """AWS S3 implementation for cloud storage operations.
 
     Provides CRUD operations for S3 buckets and objects.

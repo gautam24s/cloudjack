@@ -7,7 +7,7 @@ from typing import Any, cast
 from google.api_core import exceptions as gcp_exceptions
 from google.cloud import logging as cloud_logging
 
-from cloud.base.logging_service import LoggingBlueprint
+from cloud.base.logging_service import LoggingService
 from cloud.base.config import GCPConfig
 from cloud.base.exceptions import (
     LoggingError,
@@ -17,7 +17,7 @@ from cloud.base.exceptions import (
 from cloud.base.types import LogEntryDict
 
 
-class Logging(LoggingBlueprint):
+class Logging(LoggingService):
     """GCP Cloud Logging service.
 
     GCP Cloud Logging uses *loggers* (similar to log groups) identified

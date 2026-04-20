@@ -7,7 +7,7 @@ from typing import Any, NoReturn, cast
 import boto3
 from botocore.exceptions import ClientError
 
-from cloud.base.queue import QueueBlueprint
+from cloud.base.queue import QueueService
 from cloud.base.exceptions import (
     QueueError,
     QueueNotFoundError,
@@ -30,7 +30,7 @@ def _handle(e: ClientError, msg: str) -> NoReturn:
     raise (exc or QueueError)(msg) from e
 
 
-class Queue(QueueBlueprint):
+class Queue(QueueService):
     """AWS SQS queue service.
 
     Attributes:

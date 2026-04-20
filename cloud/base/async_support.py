@@ -60,7 +60,7 @@ class AsyncMixin:
 
     Example::
 
-        class Storage(CloudStorageBlueprint, AsyncMixin):
+        class Storage(StorageService, AsyncMixin):
             def create_bucket(self, name: str) -> None: ...
             # => self.acreate_bucket(name) is now available
     """

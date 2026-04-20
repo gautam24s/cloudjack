@@ -51,8 +51,8 @@ Tracking document for codebase issues. Items are checked off as they are resolve
   `cloud/aws/logging_service.py` — severity is always `"INFO"` regardless of actual log content. The `write_log` method prepends `[{severity}]` to the message, but `read_logs` doesn't parse it back out.
   - **Fix:** `read_logs` now parses the `[SEVERITY] message` format to extract severity and clean message.
 
-- [x] **8. `cloud/__init__.py` only exports `SecretManagerBlueprint`**
-  Exports `SecretManagerBlueprint` and `universal_factory` but not `CloudStorageBlueprint`, `QueueBlueprint`, `ComputeBlueprint`, `DNSBlueprint`, `IAMBlueprint`, or `LoggingBlueprint`. Users importing from `cloud` directly will only see a partial API.
+- [x] **8. `cloud/__init__.py` only exports `SecretManagerService`**
+  Exports `SecretManagerService` and `universal_factory` but not `StorageService`, `QueueService`, `ComputeService`, `DNSService`, `IAMService`, or `LoggingService`. Users importing from `cloud` directly will only see a partial API.
   - **Fix:** Exported all 7 blueprints in `__all__`.
 
 - [x] **9. `cloud/aws/__init__.py` and `cloud/gcp/__init__.py` only export 2 of 7 services**
@@ -83,7 +83,7 @@ Tracking document for codebase issues. Items are checked off as they are resolve
   `cloud/base/storage.py` — `**kwargs` parameter is not typed (`**kwargs` instead of `**kwargs: Any`), inconsistent with all other blueprints.
   - **Fix:** Changed to `**kwargs: Any` and added `from typing import Any` import.
 
-- [x] **15. `SecretManagerBlueprint` methods have redundant `pass` bodies**
+- [x] **15. `SecretManagerService` methods have redundant `pass` bodies**
   `cloud/base/secret_manager.py` — all abstract methods have explicit `pass` statements after docstrings, unlike the other blueprints.
   - **Fix:** Removed all redundant `pass` statements.
 

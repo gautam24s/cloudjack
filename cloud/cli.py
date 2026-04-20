@@ -15,26 +15,26 @@ import sys
 from typing import Any
 
 from cloud.base import (
-    CloudStorageBlueprint,
-    ComputeBlueprint,
-    DNSBlueprint,
-    IAMBlueprint,
-    LoggingBlueprint,
-    QueueBlueprint,
-    SecretManagerBlueprint,
+    StorageService,
+    ComputeService,
+    DNSService,
+    IAMService,
+    LoggingService,
+    QueueService,
+    SecretManagerService,
 )
 
 # Map service name → blueprint class. The allowlist of invocable operations
 # per service is derived from the blueprint's public sync methods, so the
 # CLI cannot be tricked into calling internal helpers via getattr.
 _SERVICE_BLUEPRINTS: dict[str, type] = {
-    "secret_manager": SecretManagerBlueprint,
-    "storage": CloudStorageBlueprint,
-    "queue": QueueBlueprint,
-    "compute": ComputeBlueprint,
-    "dns": DNSBlueprint,
-    "iam": IAMBlueprint,
-    "logging": LoggingBlueprint,
+    "secret_manager": SecretManagerService,
+    "storage": StorageService,
+    "queue": QueueService,
+    "compute": ComputeService,
+    "dns": DNSService,
+    "iam": IAMService,
+    "logging": LoggingService,
 }
 
 

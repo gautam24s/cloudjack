@@ -8,7 +8,7 @@ from typing import Any, NoReturn, cast
 import boto3
 from botocore.exceptions import ClientError
 
-from cloud.base.logging_service import LoggingBlueprint
+from cloud.base.logging_service import LoggingService
 from cloud.base.exceptions import (
     LoggingError,
     LogGroupNotFoundError,
@@ -31,7 +31,7 @@ def _handle(e: ClientError, msg: str) -> NoReturn:
 _DEFAULT_STREAM = "default"
 
 
-class Logging(LoggingBlueprint):
+class Logging(LoggingService):
     """AWS CloudWatch Logs service.
 
     Attributes:

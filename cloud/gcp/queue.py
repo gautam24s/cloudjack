@@ -7,7 +7,7 @@ from typing import Any, cast
 from google.api_core import exceptions as gcp_exceptions
 from google.cloud import pubsub_v1  # type: ignore[attr-defined]
 
-from cloud.base.queue import QueueBlueprint
+from cloud.base.queue import QueueService
 from cloud.base.config import GCPConfig
 from cloud.base.exceptions import (
     QueueError,
@@ -18,7 +18,7 @@ from cloud.base.exceptions import (
 from cloud.base.types import MessageDict
 
 
-class Queue(QueueBlueprint):
+class Queue(QueueService):
     """GCP Pub/Sub queue service.
 
     Pub/Sub uses a *topic + subscription* model.  ``create_queue`` creates

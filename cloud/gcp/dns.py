@@ -7,7 +7,7 @@ from typing import Any, cast
 from google.api_core import exceptions as gcp_exceptions
 from google.cloud import dns as cloud_dns  # type: ignore[attr-defined]
 
-from cloud.base.dns import DNSBlueprint
+from cloud.base.dns import DNSService
 from cloud.base.config import GCPConfig
 from cloud.base.exceptions import (
     DNSError,
@@ -17,7 +17,7 @@ from cloud.base.exceptions import (
 from cloud.base.types import RecordDict, ZoneDict
 
 
-class DNS(DNSBlueprint):
+class DNS(DNSService):
     """GCP Cloud DNS service.
 
     Attributes:

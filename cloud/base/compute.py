@@ -7,7 +7,7 @@ from typing import Any
 from cloud.base.types import InstanceDict
 
 
-class ComputeBlueprint(ABC):
+class ComputeService(ABC):
     """Abstract interface for compute / virtual machine lifecycle.
 
     Maps to AWS EC2 and GCP Compute Engine.

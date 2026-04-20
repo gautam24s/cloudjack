@@ -65,7 +65,7 @@ nav:
   - Getting Started: getting-started.md
   - API Reference:
       - Factory: api/factory.md
-      - Blueprints:
+      - Services:
           - Secret Manager: api/blueprints/secret_manager.md
           - Storage: api/blueprints/storage.md
           - Queue: api/blueprints/queue.md

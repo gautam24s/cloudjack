@@ -7,7 +7,7 @@ from typing import Any
 from cloud.base.types import MessageDict
 
 
-class QueueBlueprint(ABC):
+class QueueService(ABC):
     """Abstract interface for queue / messaging services.
 
     Maps to AWS SQS and GCP Pub/Sub.

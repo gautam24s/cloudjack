@@ -1,3 +1,3 @@
-# QueueBlueprint
+# QueueService
 
 ::: cloud.base.queue

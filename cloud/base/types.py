@@ -14,7 +14,7 @@ from typing_extensions import NotRequired
 
 
 class MessageDict(TypedDict):
-    """A single message returned from :meth:`QueueBlueprint.receive_messages`."""
+    """A single message returned from :meth:`QueueService.receive_messages`."""
 
     message_id: str
     body: str
@@ -22,7 +22,7 @@ class MessageDict(TypedDict):
 
 
 class InstanceDict(TypedDict):
-    """A compute instance summary returned from :meth:`ComputeBlueprint.list_instances` / :meth:`ComputeBlueprint.get_instance`."""
+    """A compute instance summary returned from :meth:`ComputeService.list_instances` / :meth:`ComputeService.get_instance`."""
 
     instance_id: str
     name: str
@@ -34,14 +34,14 @@ class InstanceDict(TypedDict):
 
 
 class ZoneDict(TypedDict):
-    """A DNS zone summary returned from :meth:`DNSBlueprint.list_zones`."""
+    """A DNS zone summary returned from :meth:`DNSService.list_zones`."""
 
     zone_id: str
     name: str
 
 
 class RecordDict(TypedDict):
-    """A DNS record returned from :meth:`DNSBlueprint.list_records`."""
+    """A DNS record returned from :meth:`DNSService.list_records`."""
 
     name: str
     type: str
@@ -50,21 +50,21 @@ class RecordDict(TypedDict):
 
 
 class RoleDict(TypedDict):
-    """An IAM role summary returned from :meth:`IAMBlueprint.list_roles`."""
+    """An IAM role summary returned from :meth:`IAMService.list_roles`."""
 
     role_name: str
     role_id: str
 
 
 class PolicyDict(TypedDict):
-    """An IAM policy summary returned from :meth:`IAMBlueprint.list_policies`."""
+    """An IAM policy summary returned from :meth:`IAMService.list_policies`."""
 
     policy_name: str
     policy_identifier: str
 
 
 class LogEntryDict(TypedDict):
-    """A log entry returned from :meth:`LoggingBlueprint.read_logs`."""
+    """A log entry returned from :meth:`LoggingService.read_logs`."""
 
     timestamp: str
     message: str

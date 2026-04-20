@@ -7,7 +7,7 @@ from typing import Any
 from cloud.base.types import PolicyDict, RoleDict
 
 
-class IAMBlueprint(ABC):
+class IAMService(ABC):
     """Abstract interface for identity and access management.
 
     Maps to AWS IAM and GCP IAM.

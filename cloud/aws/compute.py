@@ -7,7 +7,7 @@ from typing import Any, NoReturn, cast
 import boto3
 from botocore.exceptions import ClientError
 
-from cloud.base.compute import ComputeBlueprint
+from cloud.base.compute import ComputeService
 from cloud.base.exceptions import (
     ComputeError,
     InstanceNotFoundError,
@@ -26,7 +26,7 @@ def _handle(e: ClientError, msg: str) -> NoReturn:
     raise (exc or ComputeError)(msg) from e
 
 
-class Compute(ComputeBlueprint):
+class Compute(ComputeService):
     """AWS EC2 compute service.
 
     Attributes:

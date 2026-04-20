@@ -7,7 +7,7 @@ from typing import Any
 from cloud.base.types import LogEntryDict
 
 
-class LoggingBlueprint(ABC):
+class LoggingService(ABC):
     """Abstract interface for cloud log management.
 
     Maps to AWS CloudWatch Logs and GCP Cloud Logging.

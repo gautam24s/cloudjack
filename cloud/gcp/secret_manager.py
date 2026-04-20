@@ -13,14 +13,14 @@ from cloud.base.exceptions import (
     SecretNotFoundError,
 )
 
-from cloud.base import SecretManagerBlueprint
+from cloud.base import SecretManagerService
 from cloud.base.config import GCPConfig
 
 
-class SecretManager(SecretManagerBlueprint):
+class SecretManager(SecretManagerService):
     """GCP Secret Manager implementation for secret management.
 
-    This provider implements the SecretManagerBlueprint interface for GCP Secret Manager,
+    This provider implements the SecretManagerService interface for GCP Secret Manager,
     allowing creation, retrieval, updating, and deletion of secrets in GCP.
 
     Attributes:

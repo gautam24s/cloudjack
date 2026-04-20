@@ -61,12 +61,12 @@ See [Config](api/core/config.md) for full details on `AWSConfig` and `GCPConfig`
 
 Pass these as `service_name`:
 
-| `service_name` | Blueprint | Description |
+| `service_name` | Return type | Description |
 |---|---|---|
-| `"secret_manager"` | [`SecretManagerBlueprint`][cloud.base.secret_manager.SecretManagerBlueprint] | CRUD for secrets |
-| `"storage"` | [`CloudStorageBlueprint`][cloud.base.storage.CloudStorageBlueprint] | Buckets and objects |
-| `"queue"` | [`QueueBlueprint`][cloud.base.queue.QueueBlueprint] | Messaging queues |
-| `"compute"` | [`ComputeBlueprint`][cloud.base.compute.ComputeBlueprint] | VM lifecycle |
-| `"dns"` | [`DNSBlueprint`][cloud.base.dns.DNSBlueprint] | DNS zones and records |
-| `"iam"` | [`IAMBlueprint`][cloud.base.iam.IAMBlueprint] | Roles and policies |
-| `"logging"` | [`LoggingBlueprint`][cloud.base.logging_service.LoggingBlueprint] | Log groups and entries |
+| `"secret_manager"` | [`SecretManagerService`][cloud.base.secret_manager.SecretManagerService] | CRUD for secrets |
+| `"storage"` | [`StorageService`][cloud.base.storage.StorageService] | Buckets and objects |
+| `"queue"` | [`QueueService`][cloud.base.queue.QueueService] | Messaging queues |
+| `"compute"` | [`ComputeService`][cloud.base.compute.ComputeService] | VM lifecycle |
+| `"dns"` | [`DNSService`][cloud.base.dns.DNSService] | DNS zones and records |
+| `"iam"` | [`IAMService`][cloud.base.iam.IAMService] | Roles and policies |
+| `"logging"` | [`LoggingService`][cloud.base.logging_service.LoggingService] | Log groups and entries |
