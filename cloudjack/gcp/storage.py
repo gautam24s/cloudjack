@@ -1,7 +1,7 @@
 """GCP Cloud Storage implementation of the StorageService interface."""
 
 from datetime import timedelta
-from typing import NoReturn
+from typing import Any, NoReturn
 from google.cloud import storage as gcs  # type: ignore[attr-defined]
 from google.api_core.exceptions import NotFound, Conflict
 from google.cloud.exceptions import GoogleCloudError
@@ -117,7 +117,7 @@ class Storage(StorageService):
         object_name: str,
         expiration: int,
         method: str = "GET",
-        **kwargs,
+        **kwargs: Any,
     ) -> str:
         """Generate a signed URL for a GCS object.
 

@@ -20,9 +20,10 @@ theme:
         icon: material/brightness-7
         name: Switch to dark mode
   features:
-    - navigation.sections
-    - navigation.expand
+    - navigation.indexes    # section/index.md becomes the section's landing page
     - navigation.top
+    - navigation.tracking
+    - toc.follow
     - search.highlight
     - content.code.copy
 
@@ -63,6 +64,20 @@ markdown_extensions:
 nav:
   - Home: index.md
   - Getting Started: getting-started.md
+  - Examples:
+      - examples/index.md
+      - Secret Manager: examples/secret_manager.md
+      - Storage: examples/storage.md
+      - Queue: examples/queue.md
+      - Compute: examples/compute.md
+      - DNS: examples/dns.md
+      - IAM: examples/iam.md
+      - Logging: examples/logging.md
+      - Configuration: examples/config.md
+      - Async: examples/async.md
+      - Errors: examples/errors.md
+      - Retry: examples/retry.md
+      - Cookbook: examples/cookbook.md
   - API Reference:
       - Factory: api/factory.md
       - Services:

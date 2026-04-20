@@ -1,7 +1,7 @@
 """AWS S3 implementation of the StorageService interface."""
 
 import boto3
-from typing import NoReturn
+from typing import Any, NoReturn
 from botocore.exceptions import ClientError
 
 from cloudjack.base.exceptions import (
@@ -222,7 +222,7 @@ class Storage(StorageService):
         object_name: str,
         expiration: int,
         method: str = "GET",
-        **kwargs,
+        **kwargs: Any,
     ) -> str:
         """Generate a pre-signed URL for accessing an S3 object.
 
