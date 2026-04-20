@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
 from google.api_core import exceptions as gcp_exceptions
 from google.cloud import compute_v1
@@ -10,6 +10,7 @@ from google.cloud import compute_v1
 from cloud.base.compute import ComputeBlueprint
 from cloud.base.config import GCPConfig
 from cloud.base.exceptions import ComputeError, InstanceNotFoundError, InstanceAlreadyExistsError
+from cloud.base.types import InstanceDict
 
 
 class Compute(ComputeBlueprint):
@@ -161,7 +162,7 @@ class Compute(ComputeBlueprint):
         except gcp_exceptions.GoogleAPICallError as e:
             raise ComputeError(f"Failed to terminate '{instance_id}'") from e
 
-    def list_instances(self, **kwargs: Any) -> list[dict[str, Any]]:
+    def list_instances(self, **kwargs: Any) -> list[InstanceDict]:
         """List Compute Engine instances in a zone.
 
         Args:
@@ -177,22 +178,25 @@ class Compute(ComputeBlueprint):
         try:
             zone = kwargs.get("zone", self.zone)
             instances = self.client.list(project=self.project_id, zone=zone)
-            return [
-                {
-                    "instance_id": inst.name,
-                    "name": inst.name,
-                    "state": inst.status,
-                    "instance_type": inst.machine_type.split("/")[-1]
-                    if inst.machine_type
-                    else "",
-                    "launch_time": str(inst.creation_timestamp or ""),
-                }
-                for inst in instances
-            ]
+            return cast(
+                list[InstanceDict],
+                [
+                    {
+                        "instance_id": inst.name,
+                        "name": inst.name,
+                        "state": inst.status,
+                        "instance_type": inst.machine_type.split("/")[-1]
+                        if inst.machine_type
+                        else "",
+                        "launch_time": str(inst.creation_timestamp or ""),
+                    }
+                    for inst in instances
+                ],
+            )
         except gcp_exceptions.GoogleAPICallError as e:
             raise ComputeError("Failed to list instances") from e
 
-    def get_instance(self, instance_id: str) -> dict[str, Any]:
+    def get_instance(self, instance_id: str) -> InstanceDict:
         """Get details for a single Compute Engine instance.
 
         Args:
@@ -215,21 +219,24 @@ class Compute(ComputeBlueprint):
                 for ac in (iface.access_configs or []):
                     if ac.nat_i_p:
                         ips.append(ac.nat_i_p)
-            return {
-                "instance_id": inst.name,
-                "name": inst.name,
-                "state": inst.status,
-                "instance_type": inst.machine_type.split("/")[-1]
-                if inst.machine_type
-                else "",
-                "launch_time": str(inst.creation_timestamp or ""),
-                "public_ip": ips[0] if ips else None,
-                "private_ip": (
-                    inst.network_interfaces[0].network_i_p
-                    if inst.network_interfaces
-                    else None
-                ),
-            }
+            return cast(
+                InstanceDict,
+                {
+                    "instance_id": inst.name,
+                    "name": inst.name,
+                    "state": inst.status,
+                    "instance_type": inst.machine_type.split("/")[-1]
+                    if inst.machine_type
+                    else "",
+                    "launch_time": str(inst.creation_timestamp or ""),
+                    "public_ip": ips[0] if ips else None,
+                    "private_ip": (
+                        inst.network_interfaces[0].network_i_p
+                        if inst.network_interfaces
+                        else None
+                    ),
+                },
+            )
         except gcp_exceptions.NotFound as e:
             raise InstanceNotFoundError(
                 f"Instance '{instance_id}' not found"

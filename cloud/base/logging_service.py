@@ -1,7 +1,10 @@
 """Cloud logging service blueprint."""
 
+import asyncio
 from abc import ABC, abstractmethod
 from typing import Any
+
+from cloud.base.types import LogEntryDict
 
 
 class LoggingBlueprint(ABC):
@@ -62,7 +65,7 @@ class LoggingBlueprint(ABC):
         *,
         limit: int = 100,
         **kwargs: Any,
-    ) -> list[dict[str, Any]]:
+    ) -> list[LogEntryDict]:
         """Read log entries.
 
         Each dict contains at least ``timestamp``, ``message``, ``severity``.
@@ -77,3 +80,42 @@ class LoggingBlueprint(ABC):
             start_time (int): Start time in epoch milliseconds *(AWS)*.
             end_time (int): End time in epoch milliseconds *(AWS)*.
         """
+
+    # --- Async variants ---
+
+    async def acreate_log_group(self, name: str, **kwargs: Any) -> None:
+        """Async variant of :meth:`create_log_group` (runs in a worker thread)."""
+        return await asyncio.to_thread(self.create_log_group, name, **kwargs)
+
+    async def adelete_log_group(self, name: str) -> None:
+        """Async variant of :meth:`delete_log_group` (runs in a worker thread)."""
+        return await asyncio.to_thread(self.delete_log_group, name)
+
+    async def alist_log_groups(self, prefix: str = "") -> list[str]:
+        """Async variant of :meth:`list_log_groups` (runs in a worker thread)."""
+        return await asyncio.to_thread(self.list_log_groups, prefix)
+
+    async def awrite_log(
+        self,
+        log_group: str,
+        message: str,
+        *,
+        severity: str = "INFO",
+        **kwargs: Any,
+    ) -> None:
+        """Async variant of :meth:`write_log` (runs in a worker thread)."""
+        return await asyncio.to_thread(
+            self.write_log, log_group, message, severity=severity, **kwargs
+        )
+
+    async def aread_logs(
+        self,
+        log_group: str,
+        *,
+        limit: int = 100,
+        **kwargs: Any,
+    ) -> list[LogEntryDict]:
+        """Async variant of :meth:`read_logs` (runs in a worker thread)."""
+        return await asyncio.to_thread(
+            self.read_logs, log_group, limit=limit, **kwargs
+        )

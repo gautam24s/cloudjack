@@ -1,7 +1,10 @@
 """Queue / Messaging service blueprint."""
 
+import asyncio
 from abc import ABC, abstractmethod
 from typing import Any
+
+from cloud.base.types import MessageDict
 
 
 class QueueBlueprint(ABC):
@@ -65,7 +68,7 @@ class QueueBlueprint(ABC):
     @abstractmethod
     def receive_messages(
         self, queue_id: str, max_messages: int = 1, **kwargs: Any
-    ) -> list[dict[str, Any]]:
+    ) -> list[MessageDict]:
         """Receive messages from a queue.
 
         Each dict in the returned list contains at least:
@@ -91,3 +94,33 @@ class QueueBlueprint(ABC):
             queue_id: Queue identifier.
             receipt_handle: Handle returned by :meth:`receive_messages`.
         """
+
+    # --- Async variants ---
+
+    async def acreate_queue(self, queue_name: str, **kwargs: Any) -> str:
+        """Async variant of :meth:`create_queue` (runs in a worker thread)."""
+        return await asyncio.to_thread(self.create_queue, queue_name, **kwargs)
+
+    async def adelete_queue(self, queue_id: str) -> None:
+        """Async variant of :meth:`delete_queue` (runs in a worker thread)."""
+        return await asyncio.to_thread(self.delete_queue, queue_id)
+
+    async def alist_queues(self, prefix: str = "") -> list[str]:
+        """Async variant of :meth:`list_queues` (runs in a worker thread)."""
+        return await asyncio.to_thread(self.list_queues, prefix)
+
+    async def asend_message(self, queue_id: str, body: str, **kwargs: Any) -> str:
+        """Async variant of :meth:`send_message` (runs in a worker thread)."""
+        return await asyncio.to_thread(self.send_message, queue_id, body, **kwargs)
+
+    async def areceive_messages(
+        self, queue_id: str, max_messages: int = 1, **kwargs: Any
+    ) -> list[MessageDict]:
+        """Async variant of :meth:`receive_messages` (runs in a worker thread)."""
+        return await asyncio.to_thread(
+            self.receive_messages, queue_id, max_messages, **kwargs
+        )
+
+    async def adelete_message(self, queue_id: str, receipt_handle: str) -> None:
+        """Async variant of :meth:`delete_message` (runs in a worker thread)."""
+        return await asyncio.to_thread(self.delete_message, queue_id, receipt_handle)

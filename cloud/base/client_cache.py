@@ -10,21 +10,32 @@ from __future__ import annotations
 import hashlib
 import json
 import threading
-from typing import Any
+from typing import Any, Callable, TypeVar
+
+T = TypeVar("T")
 
 
 class ClientCache:
     """Thread-safe, in-process cache for service instances keyed by provider + config hash."""
 
     _instance: ClientCache | None = None
+    # Class-level lock guards the singleton creation itself. A separate
+    # per-instance lock (``self._lock``) guards the cache dict.
+    _singleton_lock: threading.Lock = threading.Lock()
     _cache: dict[str, Any]
     _lock: threading.Lock
 
     def __new__(cls) -> ClientCache:
+        # Double-checked locking: the fast path avoids lock contention once
+        # the singleton is initialised, and the slow path recheques inside
+        # the lock to prevent two threads from racing the first-time init.
         if cls._instance is None:
-            cls._instance = super().__new__(cls)
-            cls._instance._cache = {}
-            cls._instance._lock = threading.Lock()
+            with cls._singleton_lock:
+                if cls._instance is None:
+                    inst = super().__new__(cls)
+                    inst._cache = {}
+                    inst._lock = threading.Lock()
+                    cls._instance = inst
         return cls._instance
 
     @staticmethod
@@ -43,15 +54,18 @@ class ClientCache:
         cloud_provider: str,
         service_name: str,
         config: dict,
-        factory: Any,
-    ) -> Any:
+        factory: Callable[[dict], T],
+    ) -> T:
         """Return a cached service instance or create one via *factory*.
+
+        The return type is inferred from *factory*, so callers keep full
+        editor autocomplete on the returned service.
 
         Args:
             cloud_provider: Cloud provider name (e.g. 'aws').
             service_name: Service name (e.g. 'storage').
-            config: Configuration dict.
             factory: Callable(config) that creates a new service instance.
+            config: Configuration dict.
 
         Returns:
             The cached (or newly-created) service instance.
@@ -60,7 +74,8 @@ class ClientCache:
         with self._lock:
             if key not in self._cache:
                 self._cache[key] = factory(config)
-            return self._cache[key]
+            cached: T = self._cache[key]
+            return cached
 
     def clear(self) -> None:
         """Flush all cached service instances."""

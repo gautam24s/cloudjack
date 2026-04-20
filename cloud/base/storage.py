@@ -1,5 +1,6 @@
 """Cloud storage service blueprint."""
 
+import asyncio
 from abc import ABC, abstractmethod
 from typing import Any
 
@@ -123,11 +124,66 @@ class CloudStorageBlueprint(ABC):
                 response *(AWS, GCP)*.
             response_type (str): Content-Type header in response *(AWS, GCP)*.
             version (str): Signing version — ``"v2"`` or ``"v4"``
-                *(GCP only, default ``"v4"``)*. 
+                *(GCP only, default ``"v4"``)*.
             scheme (str): URL scheme — ``"http"`` or ``"https"``
-                *(GCP only, default ``"https"``)*. 
+                *(GCP only, default ``"https"``)*.
 
         Returns:
             A pre-signed URL string.
         """
         pass
+
+    # --- Async variants ---
+
+    async def acreate_bucket(self, bucket_name: str) -> None:
+        """Async variant of :meth:`create_bucket` (runs in a worker thread)."""
+        return await asyncio.to_thread(self.create_bucket, bucket_name)
+
+    async def adelete_bucket(self, bucket_name: str) -> None:
+        """Async variant of :meth:`delete_bucket` (runs in a worker thread)."""
+        return await asyncio.to_thread(self.delete_bucket, bucket_name)
+
+    async def alist_buckets(self) -> list[str]:
+        """Async variant of :meth:`list_buckets` (runs in a worker thread)."""
+        return await asyncio.to_thread(self.list_buckets)
+
+    async def aupload_file(
+        self, bucket_name: str, object_name: str, file_path: str
+    ) -> None:
+        """Async variant of :meth:`upload_file` (runs in a worker thread)."""
+        return await asyncio.to_thread(
+            self.upload_file, bucket_name, object_name, file_path
+        )
+
+    async def adownload_file(
+        self, bucket_name: str, object_name: str, destination: str
+    ) -> None:
+        """Async variant of :meth:`download_file` (runs in a worker thread)."""
+        return await asyncio.to_thread(
+            self.download_file, bucket_name, object_name, destination
+        )
+
+    async def adelete_object(self, bucket_name: str, object_name: str) -> None:
+        """Async variant of :meth:`delete_object` (runs in a worker thread)."""
+        return await asyncio.to_thread(self.delete_object, bucket_name, object_name)
+
+    async def alist_objects(self, bucket_name: str, prefix: str = "") -> list[str]:
+        """Async variant of :meth:`list_objects` (runs in a worker thread)."""
+        return await asyncio.to_thread(self.list_objects, bucket_name, prefix)
+
+    async def aget_object(self, bucket_name: str, object_name: str) -> bytes:
+        """Async variant of :meth:`get_object` (runs in a worker thread)."""
+        return await asyncio.to_thread(self.get_object, bucket_name, object_name)
+
+    async def agenerate_signed_url(
+        self,
+        bucket_name: str,
+        object_name: str,
+        expiration: int,
+        method: str = "GET",
+        **kwargs: Any,
+    ) -> str:
+        """Async variant of :meth:`generate_signed_url` (runs in a worker thread)."""
+        return await asyncio.to_thread(
+            self.generate_signed_url, bucket_name, object_name, expiration, method, **kwargs
+        )

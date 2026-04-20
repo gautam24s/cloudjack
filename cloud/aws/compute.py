@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, NoReturn
+from typing import Any, NoReturn, cast
 
 import boto3
 from botocore.exceptions import ClientError
@@ -13,6 +13,7 @@ from cloud.base.exceptions import (
     InstanceNotFoundError,
 )
 from cloud.base.config import AWSConfig
+from cloud.base.types import InstanceDict
 
 _ERROR_MAP: dict[str, type[ComputeError]] = {
     "InvalidInstanceID.NotFound": InstanceNotFoundError,
@@ -132,7 +133,7 @@ class Compute(ComputeBlueprint):
         except ClientError as e:
             _handle(e, f"Failed to terminate instance '{instance_id}'")
 
-    def list_instances(self, **kwargs: Any) -> list[dict[str, Any]]:
+    def list_instances(self, **kwargs: Any) -> list[InstanceDict]:
         """List EC2 instances.
 
         Args:
@@ -167,11 +168,11 @@ class Compute(ComputeBlueprint):
                             "launch_time": str(inst.get("LaunchTime", "")),
                         }
                     )
-            return instances
+            return cast(list[InstanceDict], instances)
         except ClientError as e:
             _handle(e, "Failed to list instances")
 
-    def get_instance(self, instance_id: str) -> dict[str, Any]:
+    def get_instance(self, instance_id: str) -> InstanceDict:
         """Get details for a single EC2 instance.
 
         Args:
@@ -193,14 +194,17 @@ class Compute(ComputeBlueprint):
                 if tag["Key"] == "Name":
                     name = tag["Value"]
                     break
-            return {
-                "instance_id": inst["InstanceId"],
-                "name": name,
-                "state": inst["State"]["Name"],
-                "instance_type": inst.get("InstanceType"),
-                "launch_time": str(inst.get("LaunchTime", "")),
-                "public_ip": inst.get("PublicIpAddress"),
-                "private_ip": inst.get("PrivateIpAddress"),
-            }
+            return cast(
+                InstanceDict,
+                {
+                    "instance_id": inst["InstanceId"],
+                    "name": name,
+                    "state": inst["State"]["Name"],
+                    "instance_type": inst.get("InstanceType"),
+                    "launch_time": str(inst.get("LaunchTime", "")),
+                    "public_ip": inst.get("PublicIpAddress"),
+                    "private_ip": inst.get("PrivateIpAddress"),
+                },
+            )
         except ClientError as e:
             _handle(e, f"Failed to get instance '{instance_id}'")

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Callable, cast
 
 from google.api_core import exceptions as gcp_exceptions
 from google.cloud import iam_admin_v1
@@ -15,6 +15,11 @@ from cloud.base.exceptions import (
     RoleNotFoundError,
     RoleAlreadyExistsError,
 )
+from cloud.base.types import PolicyDict, RoleDict
+
+# Max attempts for optimistic-concurrency retry when another writer updates
+# the project IAM policy between our get_iam_policy / set_iam_policy calls.
+_POLICY_MAX_RETRIES = 5
 
 
 class IAM(IAMBlueprint):
@@ -108,7 +113,7 @@ class IAM(IAMBlueprint):
         except gcp_exceptions.GoogleAPICallError as e:
             raise IAMError(f"Failed to delete role '{role_name}'") from e
 
-    def list_roles(self, **kwargs: Any) -> list[dict[str, Any]]:
+    def list_roles(self, **kwargs: Any) -> list[RoleDict]:
         """List GCP custom roles.
 
         Args:
@@ -124,15 +129,18 @@ class IAM(IAMBlueprint):
         try:
             parent = kwargs.get("parent", f"projects/{self.project_id}")
             roles = self.client.list_roles(request={"parent": parent})
-            return [
-                {
-                    "role_name": r.name.split("/")[-1],
-                    "role_id": r.name,
-                    "title": r.title,
-                    "description": r.description,
-                }
-                for r in roles
-            ]
+            return cast(
+                list[RoleDict],
+                [
+                    {
+                        "role_name": r.name.split("/")[-1],
+                        "role_id": r.name,
+                        "title": r.title,
+                        "description": r.description,
+                    }
+                    for r in roles
+                ],
+            )
         except gcp_exceptions.GoogleAPICallError as e:
             raise IAMError("Failed to list roles") from e
 
@@ -150,7 +158,13 @@ class IAM(IAMBlueprint):
         )
 
     def _set_policy(self, policy: Any) -> None:
-        """Write back the project-level IAM policy via Resource Manager."""
+        """Write back the project-level IAM policy via Resource Manager.
+
+        The ``etag`` carried on *policy* is sent with the request so GCP
+        rejects the write (with ``Aborted``) if another client modified the
+        policy in the meantime. Callers should run this inside
+        :meth:`_apply_policy_change` to get automatic retry-on-conflict.
+        """
         from google.cloud import resourcemanager_v3
 
         rm = resourcemanager_v3.ProjectsClient()
@@ -161,6 +175,27 @@ class IAM(IAMBlueprint):
             }
         )
 
+    def _apply_policy_change(self, mutate: Callable[[Any], None]) -> None:
+        """Read-modify-write the project IAM policy with etag-based retry.
+
+        GCP's ``setIamPolicy`` returns ``Aborted`` when the supplied etag no
+        longer matches the stored policy (i.e. someone else wrote to it).
+        We refetch and replay the mutation up to ``_POLICY_MAX_RETRIES``
+        times before giving up.
+        """
+        last_exc: gcp_exceptions.GoogleAPICallError | None = None
+        for _ in range(_POLICY_MAX_RETRIES):
+            policy = self._get_policy()
+            mutate(policy)
+            try:
+                self._set_policy(policy)
+                return
+            except gcp_exceptions.Aborted as e:
+                last_exc = e
+                continue
+        assert last_exc is not None
+        raise last_exc
+
     def attach_policy(self, role_name: str, policy_identifier: str, **kwargs: Any) -> None:
         """Attach a role binding for a member.
 
@@ -169,23 +204,22 @@ class IAM(IAMBlueprint):
                        or ``projects/<p>/roles/<r>``).
             policy_identifier: Member string (e.g. ``user:alice@example.com``).
         """
-        try:
-            policy = self._get_policy()
+        from google.iam.v1 import policy_pb2
+
+        def _mutate(policy: Any) -> None:
             for binding in policy.bindings:
                 if binding.role == role_name:
                     if policy_identifier not in binding.members:
                         binding.members.append(policy_identifier)
-                    self._set_policy(policy)
                     return
-            # No existing binding for this role → create one
-            from google.iam.v1 import policy_pb2
-
             new_binding = policy_pb2.Binding()
             new_binding.role = role_name
             new_binding.members.append(policy_identifier)
             policy.bindings.append(new_binding)
-            self._set_policy(policy)
-        except Exception as e:
+
+        try:
+            self._apply_policy_change(_mutate)
+        except gcp_exceptions.GoogleAPICallError as e:
             raise IAMError(
                 f"Failed to attach '{policy_identifier}' to '{role_name}'"
             ) from e
@@ -200,19 +234,20 @@ class IAM(IAMBlueprint):
         Raises:
             IAMError: On API failure.
         """
-        try:
-            policy = self._get_policy()
+        def _mutate(policy: Any) -> None:
             for binding in policy.bindings:
                 if binding.role == role_name and policy_identifier in binding.members:
                     binding.members.remove(policy_identifier)
-                    break
-            self._set_policy(policy)
-        except Exception as e:
+                    return
+
+        try:
+            self._apply_policy_change(_mutate)
+        except gcp_exceptions.GoogleAPICallError as e:
             raise IAMError(
                 f"Failed to detach '{policy_identifier}' from '{role_name}'"
             ) from e
 
-    def list_policies(self, **kwargs: Any) -> list[dict[str, Any]]:
+    def list_policies(self, **kwargs: Any) -> list[PolicyDict]:
         """List GCP IAM policy bindings for the project.
 
         Returns:
@@ -221,13 +256,16 @@ class IAM(IAMBlueprint):
         """
         try:
             policy = self._get_policy()
-            return [
-                {
-                    "policy_name": b.role,
-                    "policy_identifier": b.role,
-                    "members": list(b.members),
-                }
-                for b in policy.bindings
-            ]
-        except Exception as e:
+            return cast(
+                list[PolicyDict],
+                [
+                    {
+                        "policy_name": b.role,
+                        "policy_identifier": b.role,
+                        "members": list(b.members),
+                    }
+                    for b in policy.bindings
+                ],
+            )
+        except gcp_exceptions.GoogleAPICallError as e:
             raise IAMError("Failed to list policies") from e

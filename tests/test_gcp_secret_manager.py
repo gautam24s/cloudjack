@@ -1,6 +1,10 @@
 from unittest.mock import patch, MagicMock
 import pytest
-from google.api_core.exceptions import NotFound, AlreadyExists
+from google.api_core.exceptions import (
+    AlreadyExists,
+    InternalServerError,
+    NotFound,
+)
 
 from cloud.gcp.secret_manager import SecretManager
 from cloud.base.config import GCPConfig
@@ -42,7 +46,7 @@ class TestGetSecret:
 
     def test_generic_error(self, sm):
         instance, client = sm
-        client.access_secret_version.side_effect = RuntimeError("boom")
+        client.access_secret_version.side_effect = InternalServerError("boom")
         with pytest.raises(SecretManagerError):
             instance.get_secret("fail")
 
@@ -65,7 +69,7 @@ class TestCreateSecret:
 
     def test_generic_error(self, sm):
         instance, client = sm
-        client.create_secret.side_effect = RuntimeError("boom")
+        client.create_secret.side_effect = InternalServerError("boom")
         with pytest.raises(SecretManagerError):
             instance.create_secret("fail", "value")
 
@@ -90,7 +94,7 @@ class TestUpdateSecret:
 
     def test_generic_error(self, sm):
         instance, client = sm
-        client.get_secret.side_effect = RuntimeError("boom")
+        client.get_secret.side_effect = InternalServerError("boom")
         with pytest.raises(SecretManagerError):
             instance.update_secret("fail", "val")
 
@@ -114,6 +118,6 @@ class TestDeleteSecret:
 
     def test_generic_error(self, sm):
         instance, client = sm
-        client.delete_secret.side_effect = RuntimeError("boom")
+        client.delete_secret.side_effect = InternalServerError("boom")
         with pytest.raises(SecretManagerError):
             instance.delete_secret("fail")

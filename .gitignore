@@ -10,3 +10,20 @@ wheels/
 .venv
 
 site/
+
+# Coverage
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+
+# Credentials / secrets — never commit
+*token*.txt
+*secret*.txt
+*.pem
+*.key
+credentials*.json
+service-account*.json
+.env
+.env.*
+!.env.example

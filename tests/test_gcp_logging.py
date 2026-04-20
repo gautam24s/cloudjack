@@ -118,7 +118,7 @@ class TestWriteLog:
     def test_error(self, svc):
         inst, client = svc
         mock_logger = MagicMock()
-        mock_logger.log_text.side_effect = Exception("fail")
+        mock_logger.log_text.side_effect = gcp_exceptions.InternalServerError("fail")
         client.logger.return_value = mock_logger
         with pytest.raises(LoggingError):
             inst.write_log("my-log", "msg")
@@ -153,6 +153,6 @@ class TestReadLogs:
 
     def test_error(self, svc):
         inst, client = svc
-        client.list_entries.side_effect = Exception("fail")
+        client.list_entries.side_effect = gcp_exceptions.InternalServerError("fail")
         with pytest.raises(LoggingError):
             inst.read_logs("my-log")

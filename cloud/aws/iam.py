@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from typing import Any, NoReturn
+from typing import Any, NoReturn, cast
 
 import boto3
 from botocore.exceptions import ClientError
@@ -15,6 +15,7 @@ from cloud.base.exceptions import (
     RoleAlreadyExistsError,
 )
 from cloud.base.config import AWSConfig
+from cloud.base.types import PolicyDict, RoleDict
 
 _ERROR_MAP: dict[str, type[IAMError]] = {
     "NoSuchEntity": RoleNotFoundError,
@@ -120,7 +121,7 @@ class IAM(IAMBlueprint):
         except ClientError as e:
             _handle(e, f"Failed to delete role '{role_name}'")
 
-    def list_roles(self, **kwargs: Any) -> list[dict[str, Any]]:
+    def list_roles(self, **kwargs: Any) -> list[RoleDict]:
         """List IAM roles.
 
         Args:
@@ -149,7 +150,7 @@ class IAM(IAMBlueprint):
                     }
                     for r in page.get("Roles", [])
                 )
-            return roles
+            return cast(list[RoleDict], roles)
         except ClientError as e:
             _handle(e, "Failed to list roles")
 
@@ -200,7 +201,7 @@ class IAM(IAMBlueprint):
         except ClientError as e:
             _handle(e, f"Failed to detach policy '{policy_identifier}' from role '{role_name}'")
 
-    def list_policies(self, **kwargs: Any) -> list[dict[str, Any]]:
+    def list_policies(self, **kwargs: Any) -> list[PolicyDict]:
         """List IAM managed policies.
 
         Args:
@@ -230,6 +231,6 @@ class IAM(IAMBlueprint):
                     }
                     for p in page.get("Policies", [])
                 )
-            return policies
+            return cast(list[PolicyDict], policies)
         except ClientError as e:
             _handle(e, "Failed to list policies")

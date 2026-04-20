@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, NoReturn
+from typing import Any, NoReturn, cast
 
 import boto3
 from botocore.exceptions import ClientError
@@ -15,6 +15,7 @@ from cloud.base.exceptions import (
     MessageError,
 )
 from cloud.base.config import AWSConfig
+from cloud.base.types import MessageDict
 
 _ERROR_MAP: dict[str, type[QueueError]] = {
     "AWS.SimpleQueueService.NonExistentQueue": QueueNotFoundError,
@@ -140,7 +141,7 @@ class Queue(QueueBlueprint):
 
     def receive_messages(
         self, queue_id: str, max_messages: int = 1, **kwargs: Any
-    ) -> list[dict[str, Any]]:
+    ) -> list[MessageDict]:
         """Receive messages from an SQS queue.
 
         Args:
@@ -164,14 +165,17 @@ class Queue(QueueBlueprint):
             if "visibility_timeout" in kwargs:
                 params["VisibilityTimeout"] = kwargs["visibility_timeout"]
             resp = self.client.receive_message(**params)
-            return [
-                {
-                    "message_id": m["MessageId"],
-                    "body": m["Body"],
-                    "receipt_handle": m["ReceiptHandle"],
-                }
-                for m in resp.get("Messages", [])
-            ]
+            return cast(
+                list[MessageDict],
+                [
+                    {
+                        "message_id": m["MessageId"],
+                        "body": m["Body"],
+                        "receipt_handle": m["ReceiptHandle"],
+                    }
+                    for m in resp.get("Messages", [])
+                ],
+            )
         except ClientError as e:
             raise MessageError(f"Failed to receive messages from '{queue_id}'") from e
 

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
 from google.api_core import exceptions as gcp_exceptions
 from google.cloud import pubsub_v1  # type: ignore[attr-defined]
@@ -15,6 +15,7 @@ from cloud.base.exceptions import (
     QueueAlreadyExistsError,
     MessageError,
 )
+from cloud.base.types import MessageDict
 
 
 class Queue(QueueBlueprint):
@@ -93,23 +94,36 @@ class Queue(QueueBlueprint):
             queue_id: Queue name (not subscription path). Both the
                       ``<name>-sub`` subscription and the ``<name>`` topic
                       are deleted.
+
+        Raises:
+            QueueNotFoundError: Only if *neither* the subscription nor the
+                topic exists (i.e. the queue is genuinely absent).
+            QueueError: On any other Pub/Sub failure. Both the topic and the
+                subscription are always attempted, so a transient failure on
+                one doesn't leave the other orphaned.
         """
+        sub_missing = False
         try:
             self.subscriber.delete_subscription(
                 request={"subscription": self._sub_path(queue_id)}
             )
         except gcp_exceptions.NotFound:
-            pass
+            sub_missing = True
         except gcp_exceptions.GoogleAPICallError as e:
             raise QueueError(f"Failed to delete subscription '{queue_id}'") from e
+
+        topic_missing = False
         try:
             self.publisher.delete_topic(
                 request={"topic": self._topic_path(queue_id)}
             )
-        except gcp_exceptions.NotFound as e:
-            raise QueueNotFoundError(f"Topic '{queue_id}' not found") from e
+        except gcp_exceptions.NotFound:
+            topic_missing = True
         except gcp_exceptions.GoogleAPICallError as e:
             raise QueueError(f"Failed to delete topic '{queue_id}'") from e
+
+        if sub_missing and topic_missing:
+            raise QueueNotFoundError(f"Queue '{queue_id}' not found")
 
     def list_queues(self, prefix: str = "") -> list[str]:
         """List Pub/Sub topic names, optionally filtered by prefix.
@@ -153,12 +167,12 @@ class Queue(QueueBlueprint):
                 topic_path, body.encode("utf-8"), **attrs
             )
             return future.result()  # type: ignore[no-any-return]
-        except Exception as e:
+        except gcp_exceptions.GoogleAPICallError as e:
             raise MessageError(f"Failed to publish to '{queue_id}'") from e
 
     def receive_messages(
         self, queue_id: str, max_messages: int = 1, **kwargs: Any
-    ) -> list[dict[str, Any]]:
+    ) -> list[MessageDict]:
         """Pull messages from a Pub/Sub subscription.
 
         Args:
@@ -180,17 +194,20 @@ class Queue(QueueBlueprint):
                     "max_messages": max_messages,
                 }
             )
-            return [
-                {
-                    "message_id": msg.message.message_id,
-                    "body": msg.message.data.decode("utf-8"),
-                    "receipt_handle": msg.ack_id,
-                }
-                for msg in resp.received_messages
-            ]
+            return cast(
+                list[MessageDict],
+                [
+                    {
+                        "message_id": msg.message.message_id,
+                        "body": msg.message.data.decode("utf-8"),
+                        "receipt_handle": msg.ack_id,
+                    }
+                    for msg in resp.received_messages
+                ],
+            )
         except gcp_exceptions.NotFound as e:
             raise QueueNotFoundError(f"Subscription for '{queue_id}' not found") from e
-        except Exception as e:
+        except gcp_exceptions.GoogleAPICallError as e:
             raise MessageError(f"Failed to receive from '{queue_id}'") from e
 
     def delete_message(self, queue_id: str, receipt_handle: str) -> None:
@@ -211,5 +228,5 @@ class Queue(QueueBlueprint):
                     "ack_ids": [receipt_handle],
                 }
             )
-        except Exception as e:
+        except gcp_exceptions.GoogleAPICallError as e:
             raise MessageError(f"Failed to ack message in '{queue_id}'") from e

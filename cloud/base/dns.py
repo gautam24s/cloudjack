@@ -1,7 +1,10 @@
 """DNS service blueprint."""
 
+import asyncio
 from abc import ABC, abstractmethod
 from typing import Any
+
+from cloud.base.types import RecordDict, ZoneDict
 
 
 class DNSBlueprint(ABC):
@@ -39,7 +42,7 @@ class DNSBlueprint(ABC):
         """Delete a hosted zone."""
 
     @abstractmethod
-    def list_zones(self) -> list[dict[str, Any]]:
+    def list_zones(self) -> list[ZoneDict]:
         """List hosted zones.
 
         Each dict contains at least ``zone_id`` and ``name``.
@@ -91,8 +94,53 @@ class DNSBlueprint(ABC):
         """
 
     @abstractmethod
-    def list_records(self, zone_id: str) -> list[dict[str, Any]]:
+    def list_records(self, zone_id: str) -> list[RecordDict]:
         """List records in a zone.
 
         Each dict contains at least ``name``, ``type``, ``ttl``, ``values``.
         """
+
+    # --- Async variants ---
+
+    async def acreate_zone(self, zone_name: str, **kwargs: Any) -> str:
+        """Async variant of :meth:`create_zone` (runs in a worker thread)."""
+        return await asyncio.to_thread(self.create_zone, zone_name, **kwargs)
+
+    async def adelete_zone(self, zone_id: str) -> None:
+        """Async variant of :meth:`delete_zone` (runs in a worker thread)."""
+        return await asyncio.to_thread(self.delete_zone, zone_id)
+
+    async def alist_zones(self) -> list[ZoneDict]:
+        """Async variant of :meth:`list_zones` (runs in a worker thread)."""
+        return await asyncio.to_thread(self.list_zones)
+
+    async def acreate_record(
+        self,
+        zone_id: str,
+        record_name: str,
+        record_type: str,
+        values: list[str],
+        ttl: int = 300,
+        **kwargs: Any,
+    ) -> None:
+        """Async variant of :meth:`create_record` (runs in a worker thread)."""
+        return await asyncio.to_thread(
+            self.create_record, zone_id, record_name, record_type, values, ttl, **kwargs
+        )
+
+    async def adelete_record(
+        self,
+        zone_id: str,
+        record_name: str,
+        record_type: str,
+        values: list[str],
+        ttl: int = 300,
+    ) -> None:
+        """Async variant of :meth:`delete_record` (runs in a worker thread)."""
+        return await asyncio.to_thread(
+            self.delete_record, zone_id, record_name, record_type, values, ttl
+        )
+
+    async def alist_records(self, zone_id: str) -> list[RecordDict]:
+        """Async variant of :meth:`list_records` (runs in a worker thread)."""
+        return await asyncio.to_thread(self.list_records, zone_id)

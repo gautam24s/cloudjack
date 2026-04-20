@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
 from google.api_core import exceptions as gcp_exceptions
 from google.cloud import dns as cloud_dns  # type: ignore[attr-defined]
@@ -14,6 +14,7 @@ from cloud.base.exceptions import (
     ZoneNotFoundError,
     ZoneAlreadyExistsError,
 )
+from cloud.base.types import RecordDict, ZoneDict
 
 
 class DNS(DNSBlueprint):
@@ -65,7 +66,7 @@ class DNS(DNSBlueprint):
             raise ZoneAlreadyExistsError(
                 f"Zone '{zone_name}' already exists"
             ) from e
-        except Exception as e:
+        except gcp_exceptions.GoogleAPICallError as e:
             raise DNSError(f"Failed to create zone '{zone_name}'") from e
 
     def delete_zone(self, zone_id: str) -> None:
@@ -82,10 +83,10 @@ class DNS(DNSBlueprint):
             zone.delete()
         except gcp_exceptions.NotFound as e:
             raise ZoneNotFoundError(f"Zone '{zone_id}' not found") from e
-        except Exception as e:
+        except gcp_exceptions.GoogleAPICallError as e:
             raise DNSError(f"Failed to delete zone '{zone_id}'") from e
 
-    def list_zones(self) -> list[dict[str, Any]]:
+    def list_zones(self) -> list[ZoneDict]:
         """List all Cloud DNS managed zones.
 
         Returns:
@@ -96,15 +97,18 @@ class DNS(DNSBlueprint):
         """
         try:
             zones = self.client.list_zones()
-            return [
-                {
-                    "zone_id": z.name,
-                    "name": z.dns_name,
-                    "description": z.description,
-                }
-                for z in zones
-            ]
-        except Exception as e:
+            return cast(
+                list[ZoneDict],
+                [
+                    {
+                        "zone_id": z.name,
+                        "name": z.dns_name,
+                        "description": z.description,
+                    }
+                    for z in zones
+                ],
+            )
+        except gcp_exceptions.GoogleAPICallError as e:
             raise DNSError("Failed to list zones") from e
 
     # --- Record management ---
@@ -141,7 +145,7 @@ class DNS(DNSBlueprint):
             changes.create()
         except gcp_exceptions.NotFound as e:
             raise ZoneNotFoundError(f"Zone '{zone_id}' not found") from e
-        except Exception as e:
+        except gcp_exceptions.GoogleAPICallError as e:
             raise DNSError(
                 f"Failed to create record '{record_name}' in '{zone_id}'"
             ) from e
@@ -177,12 +181,12 @@ class DNS(DNSBlueprint):
             changes.create()
         except gcp_exceptions.NotFound as e:
             raise ZoneNotFoundError(f"Zone '{zone_id}' not found") from e
-        except Exception as e:
+        except gcp_exceptions.GoogleAPICallError as e:
             raise DNSError(
                 f"Failed to delete record '{record_name}' from '{zone_id}'"
             ) from e
 
-    def list_records(self, zone_id: str) -> list[dict[str, Any]]:
+    def list_records(self, zone_id: str) -> list[RecordDict]:
         """List all DNS records in a Cloud DNS zone.
 
         Args:
@@ -197,16 +201,19 @@ class DNS(DNSBlueprint):
         try:
             zone = self.client.zone(zone_id)
             records = zone.list_resource_record_sets()
-            return [
-                {
-                    "name": r.name,
-                    "type": r.record_type,
-                    "ttl": r.ttl,
-                    "values": list(r.rrdatas),
-                }
-                for r in records
-            ]
+            return cast(
+                list[RecordDict],
+                [
+                    {
+                        "name": r.name,
+                        "type": r.record_type,
+                        "ttl": r.ttl,
+                        "values": list(r.rrdatas),
+                    }
+                    for r in records
+                ],
+            )
         except gcp_exceptions.NotFound as e:
             raise ZoneNotFoundError(f"Zone '{zone_id}' not found") from e
-        except Exception as e:
+        except gcp_exceptions.GoogleAPICallError as e:
             raise DNSError(f"Failed to list records in '{zone_id}'") from e

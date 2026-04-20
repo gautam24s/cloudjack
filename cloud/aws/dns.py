@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import uuid
-from typing import Any, NoReturn
+from typing import Any, NoReturn, cast
 
 import boto3
 from botocore.exceptions import ClientError
@@ -15,6 +15,7 @@ from cloud.base.exceptions import (
     ZoneAlreadyExistsError,
 )
 from cloud.base.config import AWSConfig
+from cloud.base.types import RecordDict, ZoneDict
 
 _ERROR_MAP: dict[str, type[DNSError]] = {
     "NoSuchHostedZone": ZoneNotFoundError,
@@ -86,7 +87,7 @@ class DNS(DNSBlueprint):
         except ClientError as e:
             _handle(e, f"Failed to delete zone '{zone_id}'")
 
-    def list_zones(self) -> list[dict[str, Any]]:
+    def list_zones(self) -> list[ZoneDict]:
         """List all Route 53 hosted zones.
 
         Returns:
@@ -109,7 +110,7 @@ class DNS(DNSBlueprint):
                     }
                     for z in page.get("HostedZones", [])
                 )
-            return zones
+            return cast(list[ZoneDict], zones)
         except ClientError as e:
             _handle(e, "Failed to list zones")
 
@@ -204,7 +205,7 @@ class DNS(DNSBlueprint):
         """
         self._change_record(zone_id, "DELETE", record_name, record_type, values, ttl)
 
-    def list_records(self, zone_id: str) -> list[dict[str, Any]]:
+    def list_records(self, zone_id: str) -> list[RecordDict]:
         """List all DNS records in a Route 53 hosted zone.
 
         Args:
@@ -218,14 +219,17 @@ class DNS(DNSBlueprint):
         """
         try:
             resp = self.client.list_resource_record_sets(HostedZoneId=zone_id)
-            return [
-                {
-                    "name": r["Name"],
-                    "type": r["Type"],
-                    "ttl": r.get("TTL", 0),
-                    "values": [rr["Value"] for rr in r.get("ResourceRecords", [])],
-                }
-                for r in resp.get("ResourceRecordSets", [])
-            ]
+            return cast(
+                list[RecordDict],
+                [
+                    {
+                        "name": r["Name"],
+                        "type": r["Type"],
+                        "ttl": r.get("TTL", 0),
+                        "values": [rr["Value"] for rr in r.get("ResourceRecords", [])],
+                    }
+                    for r in resp.get("ResourceRecordSets", [])
+                ],
+            )
         except ClientError as e:
             _handle(e, f"Failed to list records in zone '{zone_id}'")

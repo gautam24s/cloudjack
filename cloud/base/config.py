@@ -9,8 +9,18 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any, Literal, overload
+
 from pydantic import BaseModel, ConfigDict, Field, model_validator
+
+if TYPE_CHECKING:
+    from google.auth.credentials import Credentials as GoogleCredentials
+
+    GCPCredentialsType = GoogleCredentials | None
+else:
+    # At runtime pydantic needs a real type object it can resolve; ``Any``
+    # accepts any credentials object the caller passes in.
+    GCPCredentialsType = Any
 
 
 class AWSConfig(BaseModel):
@@ -58,10 +68,12 @@ class GCPConfig(BaseModel):
        to Application Default Credentials (ADC).
     """
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", arbitrary_types_allowed=True)
 
     project_id: str | None = Field(default=None, description="GCP project ID")
-    credentials: Any | None = Field(default=None, description="GCP credentials object")
+    credentials: GCPCredentialsType = Field(
+        default=None, description="GCP credentials object"
+    )
     credentials_path: str | None = Field(
         default=None, description="Path to service account JSON key file"
     )
@@ -107,7 +119,27 @@ CONFIG_REGISTRY: dict[str, type[BaseModel]] = {
 }
 
 
-def validate_config(cloud_provider: str, config: dict | None = None) -> BaseModel:
+@overload
+def validate_config(
+    cloud_provider: Literal["aws"], config: dict | None = None
+) -> AWSConfig: ...
+
+
+@overload
+def validate_config(
+    cloud_provider: Literal["gcp"], config: dict | None = None
+) -> GCPConfig: ...
+
+
+@overload
+def validate_config(
+    cloud_provider: str, config: dict | None = None
+) -> AWSConfig | GCPConfig: ...
+
+
+def validate_config(
+    cloud_provider: str, config: dict | None = None
+) -> AWSConfig | GCPConfig:
     """Validate and return a typed config model for the given provider.
 
     Args:
@@ -115,7 +147,8 @@ def validate_config(cloud_provider: str, config: dict | None = None) -> BaseMode
         config: Raw configuration dictionary.
 
     Returns:
-        A validated Pydantic config model.
+        A validated Pydantic config model (:class:`AWSConfig` or
+        :class:`GCPConfig`).
 
     Raises:
         ValueError: If the provider is unknown.
@@ -124,7 +157,9 @@ def validate_config(cloud_provider: str, config: dict | None = None) -> BaseMode
     model = CONFIG_REGISTRY.get(cloud_provider)
     if model is None:
         raise ValueError(f"No config model registered for provider: {cloud_provider}")
-    return model(**config) if config is not None else model()
+    instance = model(**config) if config is not None else model()
+    # Literal overloads guarantee the concrete type; the runtime cast is safe.
+    return instance  # type: ignore[return-value]
 
 
 __all__ = [

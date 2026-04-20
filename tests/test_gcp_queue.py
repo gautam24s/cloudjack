@@ -61,11 +61,20 @@ class TestDeleteQueue:
         sub.delete_subscription.assert_called_once()
         pub.delete_topic.assert_called_once()
 
-    def test_topic_not_found(self, svc):
+    def test_both_missing_raises(self, svc):
         inst, pub, sub = svc
+        sub.delete_subscription.side_effect = gcp_exceptions.NotFound("nope")
         pub.delete_topic.side_effect = gcp_exceptions.NotFound("nope")
         with pytest.raises(QueueNotFoundError):
             inst.delete_queue("missing")
+
+    def test_only_topic_missing_ok(self, svc):
+        # If the subscription was deleted cleanly but the topic is already
+        # gone, the delete is treated as idempotent success — the queue is
+        # not considered absent unless both components are missing.
+        inst, pub, sub = svc
+        pub.delete_topic.side_effect = gcp_exceptions.NotFound("nope")
+        inst.delete_queue("partial")  # should not raise
 
     def test_sub_not_found_continues(self, svc):
         inst, pub, sub = svc
@@ -109,7 +118,7 @@ class TestSendMessage:
 
     def test_error(self, svc):
         inst, pub, sub = svc
-        pub.publish.side_effect = Exception("publish failed")
+        pub.publish.side_effect = gcp_exceptions.InternalServerError("publish failed")
         with pytest.raises(MessageError):
             inst.send_message("q", "body")
 
@@ -148,6 +157,6 @@ class TestDeleteMessage:
 
     def test_error(self, svc):
         inst, pub, sub = svc
-        sub.acknowledge.side_effect = Exception("ack failed")
+        sub.acknowledge.side_effect = gcp_exceptions.InternalServerError("ack failed")
         with pytest.raises(MessageError):
             inst.delete_message("q", "bad-ack")

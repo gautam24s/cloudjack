@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
 from google.api_core import exceptions as gcp_exceptions
 from google.cloud import logging as cloud_logging
@@ -14,6 +14,7 @@ from cloud.base.exceptions import (
     LogGroupNotFoundError,
     LogGroupAlreadyExistsError,
 )
+from cloud.base.types import LogEntryDict
 
 
 class Logging(LoggingBlueprint):
@@ -61,7 +62,7 @@ class Logging(LoggingBlueprint):
             raise LogGroupAlreadyExistsError(
                 f"Sink '{name}' already exists"
             ) from e
-        except Exception as e:
+        except gcp_exceptions.GoogleAPICallError as e:
             raise LoggingError(f"Failed to create sink '{name}'") from e
 
     def delete_log_group(self, name: str) -> None:
@@ -71,7 +72,7 @@ class Logging(LoggingBlueprint):
             logger.delete()
         except gcp_exceptions.NotFound as e:
             raise LogGroupNotFoundError(f"Log '{name}' not found") from e
-        except Exception as e:
+        except gcp_exceptions.GoogleAPICallError as e:
             raise LoggingError(f"Failed to delete log '{name}'") from e
 
     def list_log_groups(self, prefix: str = "") -> list[str]:
@@ -89,7 +90,7 @@ class Logging(LoggingBlueprint):
                 if len(seen) > 500:
                     break
             return sorted(seen)
-        except Exception as e:
+        except gcp_exceptions.GoogleAPICallError as e:
             raise LoggingError("Failed to list log groups") from e
 
     # --- Log operations ---
@@ -126,7 +127,7 @@ class Logging(LoggingBlueprint):
             gcp_severity = self._SEVERITY_MAP.get(severity.upper(), "DEFAULT")
             labels = kwargs.get("labels", {})
             logger.log_text(message, severity=gcp_severity, labels=labels)
-        except Exception as e:
+        except gcp_exceptions.GoogleAPICallError as e:
             raise LoggingError(f"Failed to write log to '{log_group}'") from e
 
     def read_logs(
@@ -135,7 +136,7 @@ class Logging(LoggingBlueprint):
         *,
         limit: int = 100,
         **kwargs: Any,
-    ) -> list[dict[str, Any]]:
+    ) -> list[LogEntryDict]:
         """Read log entries from Cloud Logging.
 
         Args:
@@ -168,6 +169,6 @@ class Logging(LoggingBlueprint):
                 )
                 if len(results) >= limit:
                     break
-            return results
-        except Exception as e:
+            return cast(list[LogEntryDict], results)
+        except gcp_exceptions.GoogleAPICallError as e:
             raise LoggingError(f"Failed to read logs from '{log_group}'") from e

@@ -1,5 +1,6 @@
 """Secret Manager service blueprint."""
 
+import asyncio
 from abc import ABC, abstractmethod
 
 
@@ -45,3 +46,19 @@ class SecretManagerBlueprint(ABC):
         Args:
             name: Secret name.
         """
+
+    async def aget_secret(self, name: str) -> str:
+        """Async variant of :meth:`get_secret` (runs in a worker thread)."""
+        return await asyncio.to_thread(self.get_secret, name)
+
+    async def acreate_secret(self, name: str, value: str) -> None:
+        """Async variant of :meth:`create_secret` (runs in a worker thread)."""
+        return await asyncio.to_thread(self.create_secret, name, value)
+
+    async def aupdate_secret(self, name: str, value: str) -> None:
+        """Async variant of :meth:`update_secret` (runs in a worker thread)."""
+        return await asyncio.to_thread(self.update_secret, name, value)
+
+    async def adelete_secret(self, name: str) -> None:
+        """Async variant of :meth:`delete_secret` (runs in a worker thread)."""
+        return await asyncio.to_thread(self.delete_secret, name)

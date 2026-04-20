@@ -1,7 +1,11 @@
 """GCP Secret Manager implementation of the SecretManager blueprint."""
 
 from google.cloud import secretmanager_v1
-from google.api_core.exceptions import NotFound, AlreadyExists
+from google.api_core.exceptions import (
+    AlreadyExists,
+    GoogleAPICallError,
+    NotFound,
+)
 
 from cloud.base.exceptions import (
     SecretManagerError,
@@ -56,10 +60,10 @@ class SecretManager(SecretManagerBlueprint):
         try:
             response = self.client.access_secret_version(name=secret_name)
             return str(response.payload.data.decode("UTF-8"))
-        except NotFound:
-            raise SecretNotFoundError(f"Secret '{name}' not found.")
-        except Exception as e:
-            raise SecretManagerError(f"Failed to retrieve secret '{name}': {str(e)}")
+        except NotFound as e:
+            raise SecretNotFoundError(f"Secret '{name}' not found.") from e
+        except GoogleAPICallError as e:
+            raise SecretManagerError(f"Failed to retrieve secret '{name}'") from e
 
     def create_secret(self, name: str, value: str) -> None:
         """Create a new secret in GCP Secret Manager.
@@ -87,10 +91,10 @@ class SecretManager(SecretManagerBlueprint):
                     "payload": {"data": value.encode("UTF-8")},
                 }
             )
-        except AlreadyExists:
-            raise SecretAlreadyExistsError(f"Secret '{name}' already exists.")
-        except Exception as e:
-            raise SecretManagerError(f"Failed to create secret '{name}': {str(e)}")
+        except AlreadyExists as e:
+            raise SecretAlreadyExistsError(f"Secret '{name}' already exists.") from e
+        except GoogleAPICallError as e:
+            raise SecretManagerError(f"Failed to create secret '{name}'") from e
 
     def update_secret(self, name: str, value: str) -> None:
         """Update an existing secret in GCP Secret Manager.
@@ -114,10 +118,10 @@ class SecretManager(SecretManagerBlueprint):
                     "payload": {"data": value.encode("UTF-8")},
                 }
             )
-        except NotFound:
-            raise SecretNotFoundError(f"Secret '{name}' not found.")
-        except Exception as e:
-            raise SecretManagerError(f"Failed to update secret '{name}': {str(e)}")
+        except NotFound as e:
+            raise SecretNotFoundError(f"Secret '{name}' not found.") from e
+        except GoogleAPICallError as e:
+            raise SecretManagerError(f"Failed to update secret '{name}'") from e
     
     def delete_secret(self, name: str) -> None:
         """Delete a secret from GCP Secret Manager.
@@ -132,7 +136,7 @@ class SecretManager(SecretManagerBlueprint):
         secret_name = f"projects/{self.project_id}/secrets/{name}"
         try:
             self.client.delete_secret(name=secret_name)
-        except NotFound:
-            raise SecretNotFoundError(f"Secret '{name}' not found.")
-        except Exception as e:
-            raise SecretManagerError(f"Failed to delete secret '{name}': {str(e)}")
+        except NotFound as e:
+            raise SecretNotFoundError(f"Secret '{name}' not found.") from e
+        except GoogleAPICallError as e:
+            raise SecretManagerError(f"Failed to delete secret '{name}'") from e

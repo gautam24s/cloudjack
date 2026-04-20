@@ -40,7 +40,7 @@ class TestCreateZone:
     def test_generic_error(self, svc):
         inst, client = svc
         mock_zone = MagicMock()
-        mock_zone.create.side_effect = Exception("fail")
+        mock_zone.create.side_effect = gcp_exceptions.InternalServerError("fail")
         client.zone.return_value = mock_zone
         with pytest.raises(DNSError):
             inst.create_zone("fail.com.")

@@ -1,7 +1,10 @@
 """IAM / Auth service blueprint."""
 
+import asyncio
 from abc import ABC, abstractmethod
 from typing import Any
+
+from cloud.base.types import PolicyDict, RoleDict
 
 
 class IAMBlueprint(ABC):
@@ -43,7 +46,7 @@ class IAMBlueprint(ABC):
         """Delete a role by name."""
 
     @abstractmethod
-    def list_roles(self, **kwargs: Any) -> list[dict[str, Any]]:
+    def list_roles(self, **kwargs: Any) -> list[RoleDict]:
         """List roles.
 
         Each dict contains at least ``role_name`` and ``role_id``.
@@ -92,7 +95,7 @@ class IAMBlueprint(ABC):
         """
 
     @abstractmethod
-    def list_policies(self, **kwargs: Any) -> list[dict[str, Any]]:
+    def list_policies(self, **kwargs: Any) -> list[PolicyDict]:
         """List available managed policies.
 
         Each dict contains at least ``policy_name`` and ``policy_identifier``.
@@ -101,3 +104,44 @@ class IAMBlueprint(ABC):
             scope (str): Policy scope, default ``Local`` *(AWS)*.
             path_prefix (str): Filter by IAM path prefix *(AWS)*.
         """
+
+    # --- Async variants ---
+
+    async def acreate_role(
+        self,
+        role_name: str,
+        trust_policy: dict[str, Any],
+        **kwargs: Any,
+    ) -> str:
+        """Async variant of :meth:`create_role` (runs in a worker thread)."""
+        return await asyncio.to_thread(
+            self.create_role, role_name, trust_policy, **kwargs
+        )
+
+    async def adelete_role(self, role_name: str) -> None:
+        """Async variant of :meth:`delete_role` (runs in a worker thread)."""
+        return await asyncio.to_thread(self.delete_role, role_name)
+
+    async def alist_roles(self, **kwargs: Any) -> list[RoleDict]:
+        """Async variant of :meth:`list_roles` (runs in a worker thread)."""
+        return await asyncio.to_thread(self.list_roles, **kwargs)
+
+    async def aattach_policy(
+        self, role_name: str, policy_identifier: str, **kwargs: Any
+    ) -> None:
+        """Async variant of :meth:`attach_policy` (runs in a worker thread)."""
+        return await asyncio.to_thread(
+            self.attach_policy, role_name, policy_identifier, **kwargs
+        )
+
+    async def adetach_policy(
+        self, role_name: str, policy_identifier: str, **kwargs: Any
+    ) -> None:
+        """Async variant of :meth:`detach_policy` (runs in a worker thread)."""
+        return await asyncio.to_thread(
+            self.detach_policy, role_name, policy_identifier, **kwargs
+        )
+
+    async def alist_policies(self, **kwargs: Any) -> list[PolicyDict]:
+        """Async variant of :meth:`list_policies` (runs in a worker thread)."""
+        return await asyncio.to_thread(self.list_policies, **kwargs)

@@ -67,11 +67,17 @@ class AsyncMixin:
 
     def __init_subclass__(cls, **kwargs: Any) -> None:
         super().__init_subclass__(**kwargs)
-        for name in list(vars(cls)):
+        for name, raw in list(vars(cls).items()):
+            # Skip private/dunder attributes and any non-function descriptors
+            # (classmethod, staticmethod, property) — wrapping those via
+            # ``asyncio.to_thread`` either loses bound-method semantics or is
+            # plain wrong for the descriptor protocol.
             if name.startswith("_"):
                 continue
-            attr = getattr(cls, name)
-            if callable(attr) and not inspect.iscoroutinefunction(attr):
-                async_name = f"a{name}"
-                if not hasattr(cls, async_name):
-                    setattr(cls, async_name, async_wrap(attr))
+            if not inspect.isfunction(raw):
+                continue
+            if inspect.iscoroutinefunction(raw):
+                continue
+            async_name = f"a{name}"
+            if not hasattr(cls, async_name):
+                setattr(cls, async_name, async_wrap(raw))

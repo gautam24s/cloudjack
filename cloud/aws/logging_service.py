@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import time
-from typing import Any, NoReturn
+from typing import Any, NoReturn, cast
 
 import boto3
 from botocore.exceptions import ClientError
@@ -15,6 +15,7 @@ from cloud.base.exceptions import (
     LogGroupAlreadyExistsError,
 )
 from cloud.base.config import AWSConfig
+from cloud.base.types import LogEntryDict
 
 _ERROR_MAP: dict[str, type[LoggingError]] = {
     "ResourceNotFoundException": LogGroupNotFoundError,
@@ -173,7 +174,7 @@ class Logging(LoggingBlueprint):
         *,
         limit: int = 100,
         **kwargs: Any,
-    ) -> list[dict[str, Any]]:
+    ) -> list[LogEntryDict]:
         """Read log events from a CloudWatch log group.
 
         Args:
@@ -219,6 +220,6 @@ class Logging(LoggingBlueprint):
                     "severity": severity,
                     "stream": e.get("logStreamName", ""),
                 })
-            return results
+            return cast(list[LogEntryDict], results)
         except ClientError as e:
             _handle(e, f"Failed to read logs from '{log_group}'")

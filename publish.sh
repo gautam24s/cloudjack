@@ -104,12 +104,14 @@ if [[ "${TEST_PYPI:-}" == "1" ]]; then
     REPO_URL="https://test.pypi.org/simple/"
     PUBLISH_URL="https://test.pypi.org/legacy/"
     info "Publishing to TestPyPI …"
-    uv publish --publish-url "$PUBLISH_URL" --token "$PYPI_TOKEN"
+    # Pass the token via UV_PUBLISH_TOKEN rather than as a CLI argument so
+    # it doesn't appear in process listings / shell history.
+    UV_PUBLISH_TOKEN="$PYPI_TOKEN" uv publish --publish-url "$PUBLISH_URL"
     green "✓ Published to TestPyPI"
     green "  Install:  pip install -i $REPO_URL cloudjack==$NEW_VERSION"
 else
     info "Publishing to PyPI …"
-    uv publish --token "$PYPI_TOKEN"
+    UV_PUBLISH_TOKEN="$PYPI_TOKEN" uv publish
     green "✓ Published to PyPI"
     green "  Install:  pip install cloudjack==$NEW_VERSION"
 fi

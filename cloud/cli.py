@@ -9,9 +9,49 @@ Usage examples::
 from __future__ import annotations
 
 import argparse
+import inspect
 import json
 import sys
 from typing import Any
+
+from cloud.base import (
+    CloudStorageBlueprint,
+    ComputeBlueprint,
+    DNSBlueprint,
+    IAMBlueprint,
+    LoggingBlueprint,
+    QueueBlueprint,
+    SecretManagerBlueprint,
+)
+
+# Map service name → blueprint class. The allowlist of invocable operations
+# per service is derived from the blueprint's public sync methods, so the
+# CLI cannot be tricked into calling internal helpers via getattr.
+_SERVICE_BLUEPRINTS: dict[str, type] = {
+    "secret_manager": SecretManagerBlueprint,
+    "storage": CloudStorageBlueprint,
+    "queue": QueueBlueprint,
+    "compute": ComputeBlueprint,
+    "dns": DNSBlueprint,
+    "iam": IAMBlueprint,
+    "logging": LoggingBlueprint,
+}
+
+
+def _allowed_operations(service: str) -> set[str]:
+    """Return the set of sync method names defined on the service blueprint."""
+    blueprint = _SERVICE_BLUEPRINTS[service]
+    names: set[str] = set()
+    for klass in blueprint.__mro__:
+        if klass is object:
+            continue
+        for name, attr in vars(klass).items():
+            if name.startswith("_") or name.startswith("a"):
+                # Skip private and async (``a*``) variants; the CLI is sync.
+                continue
+            if inspect.isfunction(attr):
+                names.add(name)
+    return names
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -97,15 +137,18 @@ def main(argv: list[str] | None = None) -> None:
         print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
 
-    # Convert operation-name to method_name
+    # Convert operation-name to method_name and validate against the
+    # blueprint allowlist so callers can't invoke arbitrary attributes.
     method_name = ns.operation.replace("-", "_")
-    method = getattr(svc, method_name, None)
-    if method is None or not callable(method):
+    allowed = _allowed_operations(ns.service)
+    if method_name not in allowed:
         print(
-            f"Unknown operation '{ns.operation}' for {ns.provider}/{ns.service}",
+            f"Unknown operation '{ns.operation}' for {ns.provider}/{ns.service}. "
+            f"Allowed: {', '.join(sorted(allowed))}",
             file=sys.stderr,
         )
         sys.exit(1)
+    method = getattr(svc, method_name)
 
     try:
         result = method(*ns.args, **kwargs)

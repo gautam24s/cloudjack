@@ -138,7 +138,9 @@ class TestPolicyBinding:
 
     def test_attach_error(self, svc):
         inst, client = svc
-        with patch.object(inst, "_get_policy", side_effect=Exception("fail")):
+        with patch.object(
+            inst, "_get_policy", side_effect=gcp_exceptions.InternalServerError("fail")
+        ):
             with pytest.raises(IAMError):
                 inst.attach_policy("roles/viewer", "user:a@b.com")
 
@@ -161,6 +163,8 @@ class TestListPolicies:
 
     def test_error(self, svc):
         inst, client = svc
-        with patch.object(inst, "_get_policy", side_effect=Exception("fail")):
+        with patch.object(
+            inst, "_get_policy", side_effect=gcp_exceptions.InternalServerError("fail")
+        ):
             with pytest.raises(IAMError):
                 inst.list_policies()
