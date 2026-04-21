@@ -67,12 +67,25 @@ class Storage(StorageService):
         except GoogleCloudError as e:
             _handle_error(e, "Failed to list buckets.")
 
-    def upload_file(self, bucket_name: str, object_name: str, file_path: str) -> None:
-        """Upload a local file to GCS."""
+    def upload_object_from_file(
+        self, bucket_name: str, object_name: str, file_path: str
+    ) -> None:
+        """Upload an object to GCS from a local file."""
         try:
             bucket = self.client.get_bucket(bucket_name)
             blob = bucket.blob(object_name)
             blob.upload_from_filename(file_path)
+        except (GoogleCloudError, NotFound) as e:
+            _handle_error(e, f"Failed to upload '{object_name}' to '{bucket_name}'.")
+
+    def upload_object_from_bytes(
+        self, bucket_name: str, object_name: str, data: bytes
+    ) -> None:
+        """Upload an object to GCS from an in-memory bytes payload."""
+        try:
+            bucket = self.client.get_bucket(bucket_name)
+            blob = bucket.blob(object_name)
+            blob.upload_from_string(data)
         except (GoogleCloudError, NotFound) as e:
             _handle_error(e, f"Failed to upload '{object_name}' to '{bucket_name}'.")
 

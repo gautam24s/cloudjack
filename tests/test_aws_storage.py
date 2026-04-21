@@ -99,17 +99,17 @@ class TestListBuckets:
 # --- Object operations ---
 
 
-class TestUploadFile:
+class TestUploadObjectFromFile:
     def test_success(self, storage):
         instance, client = storage
-        instance.upload_file("bucket", "key", "/tmp/file")
+        instance.upload_object_from_file("bucket", "key", "/tmp/file")
         client.upload_file.assert_called_once_with("/tmp/file", "bucket", "key")
 
     def test_bucket_not_found(self, storage):
         instance, client = storage
         client.upload_file.side_effect = _client_error("NoSuchBucket")
         with pytest.raises(BucketNotFoundError):
-            instance.upload_file("missing", "key", "/tmp/file")
+            instance.upload_object_from_file("missing", "key", "/tmp/file")
 
 
 class TestDownloadFile:

@@ -17,7 +17,7 @@ from cloudjack import universal_factory
 # AWS S3
 storage = universal_factory("storage", "aws", {"region_name": "us-east-1"})
 storage.create_bucket("my-bucket")
-storage.upload_file("my-bucket", "hello.txt", "/tmp/hello.txt")
+storage.upload_object_from_file("my-bucket", "hello.txt", "/tmp/hello.txt")
 
 # GCP Cloud Storage — same interface
 storage = universal_factory("storage", "gcp", {"project_id": "my-project"})

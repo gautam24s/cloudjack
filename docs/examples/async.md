@@ -12,7 +12,7 @@ storage = universal_factory("storage", "aws", {"region_name": "us-east-1"})
 
 async def main():
     buckets = await storage.alist_buckets()
-    await storage.aupload_file("my-bucket", "hello", "/tmp/hello.txt")
+    await storage.aupload_object_from_file("my-bucket", "hello", "/tmp/hello.txt")
     blob = await storage.aget_object("my-bucket", "hello")
     return blob
 
@@ -72,7 +72,7 @@ async def upload_many(storage, bucket: str, files: list[Path], concurrency: int 
 
     async def one(f: Path):
         async with sem:
-            await storage.aupload_file(bucket, f.name, str(f))
+            await storage.aupload_object_from_file(bucket, f.name, str(f))
 
     await asyncio.gather(*(one(f) for f in files))
 ```

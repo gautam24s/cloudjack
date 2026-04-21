@@ -97,7 +97,7 @@ Catching the service root (`StorageError`, `QueueError`, …) gives you everythi
 from cloudjack import StorageError
 
 try:
-    storage.upload_file("my-bucket", "key", "/local/file")
+    storage.upload_object_from_file("my-bucket", "key", "/local/file")
 except StorageError as e:
     # Retry, alert, or fall through — you got here because the provider
     # returned an error, not because your code is broken.

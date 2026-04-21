@@ -17,7 +17,7 @@ storage = universal_factory("storage", "aws", {"region_name": "us-east-1"})
 @retry(max_attempts=3, retryable_exceptions=(StorageError, ConnectionError))
 def upload_backup(local_path: str, bucket: str, prefix: str = "backups/") -> str:
     key = f"{prefix}{datetime.utcnow():%Y-%m-%d}/{local_path.rsplit('/', 1)[-1]}"
-    storage.upload_file(bucket, key, local_path)
+    storage.upload_object_from_file(bucket, key, local_path)
     return key
 
 key = upload_backup("/var/backups/db.dump", "my-backup-bucket")

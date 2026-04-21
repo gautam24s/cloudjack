@@ -18,7 +18,10 @@ storage.delete_bucket("my-bucket")   # bucket must be empty
 
 ```python
 # Upload a local file
-storage.upload_file("my-bucket", "data/report.csv", "/tmp/report.csv")
+storage.upload_object_from_file("my-bucket", "data/report.csv", "/tmp/report.csv")
+
+# Upload an in-memory bytes payload
+storage.upload_object_from_bytes("my-bucket", "data/blob.bin", b"\x00\x01\x02")
 
 # Download to a local path
 storage.download_file("my-bucket", "data/report.csv", "/tmp/report-copy.csv")
@@ -98,11 +101,7 @@ aws = universal_factory("storage", "aws", {"region_name": "us-east-1"})
 gcp = universal_factory("storage", "gcp", {"project_id": "my-project"})
 
 blob = aws.get_object("src-bucket", "data.csv")
-
-tmp = "/tmp/relay.csv"
-with open(tmp, "wb") as f:
-    f.write(blob)
-gcp.upload_file("dst-bucket", "data.csv", tmp)
+gcp.upload_object_from_bytes("dst-bucket", "data.csv", blob)
 ```
 
 ## Concurrent uploads (async)
@@ -115,7 +114,7 @@ from pathlib import Path
 
 async def upload_many(storage, bucket: str, files: list[Path]) -> None:
     await asyncio.gather(*(
-        storage.aupload_file(bucket, f.name, str(f))
+        storage.aupload_object_from_file(bucket, f.name, str(f))
         for f in files
     ))
 

@@ -35,7 +35,7 @@ storage = universal_factory("storage", "aws", {
     "region_name": "us-east-1",
 })
 storage.create_bucket("my-bucket")
-storage.upload_file("my-bucket", "remote.txt", "local.txt")
+storage.upload_object_from_file("my-bucket", "remote.txt", "local.txt")
 buckets = storage.list_buckets()
 ```
 
@@ -62,7 +62,7 @@ from cloudjack import universal_factory
 
 storage = universal_factory("storage", "gcp", {"project_id": "my-project"})
 storage.create_bucket("my-bucket")
-storage.upload_file("my-bucket", "remote.txt", "local.txt")
+storage.upload_object_from_file("my-bucket", "remote.txt", "local.txt")
 buckets = storage.list_buckets()
 ```
 
@@ -78,7 +78,7 @@ storage = universal_factory("storage", provider, config[provider])
 
 # Same API regardless of provider
 storage.create_bucket("my-bucket")
-storage.upload_file("my-bucket", "key", "/path/to/file")
+storage.upload_object_from_file("my-bucket", "key", "/path/to/file")
 ```
 
 ---

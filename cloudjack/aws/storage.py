@@ -112,12 +112,14 @@ class Storage(StorageService):
 
     # --- Object operations ---
 
-    def upload_file(self, bucket_name: str, object_name: str, file_path: str) -> None:
-        """Upload a file to an S3 bucket.
+    def upload_object_from_file(
+        self, bucket_name: str, object_name: str, file_path: str
+    ) -> None:
+        """Upload an object to an S3 bucket from a local file.
 
         Args:
             bucket_name: The name of the target bucket.
-            object_name: The S3 object key to assign to the uploaded file.
+            object_name: The S3 object key to assign to the uploaded object.
             file_path: The local path of the file to upload.
 
         Raises:
@@ -126,6 +128,25 @@ class Storage(StorageService):
         """
         try:
             self.client.upload_file(file_path, bucket_name, object_name)
+        except ClientError as e:
+            _handle_client_error(e, f"Failed to upload '{object_name}' to '{bucket_name}'.")
+
+    def upload_object_from_bytes(
+        self, bucket_name: str, object_name: str, data: bytes
+    ) -> None:
+        """Upload an object to an S3 bucket from an in-memory bytes payload.
+
+        Args:
+            bucket_name: The name of the target bucket.
+            object_name: The S3 object key to assign to the uploaded object.
+            data: Raw object bytes to upload.
+
+        Raises:
+            BucketNotFoundError: If the bucket does not exist.
+            StorageError: If upload fails for any other reason.
+        """
+        try:
+            self.client.put_object(Bucket=bucket_name, Key=object_name, Body=data)
         except ClientError as e:
             _handle_client_error(e, f"Failed to upload '{object_name}' to '{bucket_name}'.")
 

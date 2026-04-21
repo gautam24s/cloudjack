@@ -84,21 +84,21 @@ class TestListBuckets:
 # --- Object operations ---
 
 
-class TestUploadFile:
+class TestUploadObjectFromFile:
     def test_success(self, storage):
         instance, client = storage
         mock_bucket = MagicMock()
         mock_blob = MagicMock()
         client.get_bucket.return_value = mock_bucket
         mock_bucket.blob.return_value = mock_blob
-        instance.upload_file("bucket", "key", "/tmp/file")
+        instance.upload_object_from_file("bucket", "key", "/tmp/file")
         mock_blob.upload_from_filename.assert_called_once_with("/tmp/file")
 
     def test_bucket_not_found(self, storage):
         instance, client = storage
         client.get_bucket.side_effect = NotFound("bucket not found")
         with pytest.raises((BucketNotFoundError, ObjectNotFoundError)):
-            instance.upload_file("missing", "key", "/tmp/file")
+            instance.upload_object_from_file("missing", "key", "/tmp/file")
 
 
 class TestDownloadFile:

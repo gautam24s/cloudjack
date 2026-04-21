@@ -44,13 +44,28 @@ class StorageService(ABC):
     # --- Object operations ---
 
     @abstractmethod
-    def upload_file(self, bucket_name: str, object_name: str, file_path: str) -> None:
-        """Upload a local file to a storage bucket.
+    def upload_object_from_file(
+        self, bucket_name: str, object_name: str, file_path: str
+    ) -> None:
+        """Upload an object from a local file.
 
         Args:
             bucket_name: Target bucket.
             object_name: Destination object key.
             file_path: Local filesystem path to upload.
+        """
+        pass
+
+    @abstractmethod
+    def upload_object_from_bytes(
+        self, bucket_name: str, object_name: str, data: bytes
+    ) -> None:
+        """Upload an object from an in-memory bytes payload.
+
+        Args:
+            bucket_name: Target bucket.
+            object_name: Destination object key.
+            data: Raw object bytes to upload.
         """
         pass
 
@@ -147,12 +162,20 @@ class StorageService(ABC):
         """Async variant of :meth:`list_buckets` (runs in a worker thread)."""
         return await asyncio.to_thread(self.list_buckets)
 
-    async def aupload_file(
+    async def aupload_object_from_file(
         self, bucket_name: str, object_name: str, file_path: str
     ) -> None:
-        """Async variant of :meth:`upload_file` (runs in a worker thread)."""
+        """Async variant of :meth:`upload_object_from_file` (runs in a worker thread)."""
         return await asyncio.to_thread(
-            self.upload_file, bucket_name, object_name, file_path
+            self.upload_object_from_file, bucket_name, object_name, file_path
+        )
+
+    async def aupload_object_from_bytes(
+        self, bucket_name: str, object_name: str, data: bytes
+    ) -> None:
+        """Async variant of :meth:`upload_object_from_bytes` (runs in a worker thread)."""
+        return await asyncio.to_thread(
+            self.upload_object_from_bytes, bucket_name, object_name, data
         )
 
     async def adownload_file(

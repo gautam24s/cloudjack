@@ -65,7 +65,7 @@ storage = universal_factory(
 )
 
 storage.create_bucket("my-bucket")
-storage.upload_file("my-bucket", "key", "/local/path")
+storage.upload_object_from_file("my-bucket", "key", "/local/path")
 ```
 
 ## Config: dict or model
@@ -113,7 +113,8 @@ storage.list_buckets()
 storage.delete_bucket("my-bucket")
 
 # Objects
-storage.upload_file("my-bucket", "data.csv", "/local/data.csv")
+storage.upload_object_from_file("my-bucket", "data.csv", "/local/data.csv")
+storage.upload_object_from_bytes("my-bucket", "blob.bin", b"\x00\x01\x02")
 storage.download_file("my-bucket", "data.csv", "/local/copy.csv")
 content = storage.get_object("my-bucket", "data.csv")
 storage.list_objects("my-bucket", prefix="data/")
@@ -156,7 +157,7 @@ from cloudjack import universal_factory
 async def main():
     storage = universal_factory("storage", "aws", {"region_name": "us-east-1"})
     buckets = await storage.alist_buckets()
-    await storage.aupload_file("my-bucket", "hello", "/tmp/hello.txt")
+    await storage.aupload_object_from_file("my-bucket", "hello", "/tmp/hello.txt")
 
 asyncio.run(main())
 ```

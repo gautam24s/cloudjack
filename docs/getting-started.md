@@ -98,7 +98,7 @@ from cloudjack import universal_factory
 async def main():
     storage = universal_factory("storage", "aws", {"region_name": "us-east-1"})
     buckets = await storage.alist_buckets()
-    await storage.aupload_file("my-bucket", "hello", "/tmp/hello.txt")
+    await storage.aupload_object_from_file("my-bucket", "hello", "/tmp/hello.txt")
 
 asyncio.run(main())
 ```
