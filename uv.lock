@@ -372,7 +372,7 @@ requires-dist = [
     { name = "google-cloud-resource-manager", marker = "extra == 'gcp'", specifier = ">=1.16.0" },
     { name = "google-cloud-secret-manager", marker = "extra == 'gcp'", specifier = ">=2.26.0" },
     { name = "google-cloud-storage", marker = "extra == 'gcp'", specifier = ">=3.9.0" },
-    { name = "pydantic", specifier = ">=2.12.5" },
+    { name = "pydantic", specifier = ">=2,<3" },
     { name = "typing-extensions", specifier = ">=4.12" },
 ]
 provides-extras = ["aws", "aws-stubs", "gcp", "all", "all-stubs"]
